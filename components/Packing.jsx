@@ -319,7 +319,7 @@ export default function Packing({ categories }) {
                       {editable && (
                         <button
                           onClick={() => removeItem(cat.id, it.id)}
-                          className="shrink-0 rounded-md px-1.5 py-1 text-ink/30 opacity-0 transition hover:text-bergamo group-hover:opacity-100"
+                          className="touch-visible shrink-0 rounded-md px-1.5 py-1 text-ink/30 opacity-0 transition hover:text-bergamo group-hover:opacity-100"
                           aria-label="Eemalda"
                           title="Eemalda"
                         >

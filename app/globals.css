@@ -25,6 +25,26 @@
   color-scheme: light;
 }
 
+/* Klikitavad pinnad — kursor (Tailwind v4 ei sea seda vaikimisi) */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+summary,
+select,
+a[href] {
+  cursor: pointer;
+}
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* Puuteseadmetel pole hoveriт — näita hover-peidetud nupud alati */
+@media (hover: none), (pointer: coarse) {
+  .touch-visible {
+    opacity: 1 !important;
+  }
+}
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 5rem;

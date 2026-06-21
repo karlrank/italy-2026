@@ -82,10 +82,10 @@ export default async function Page() {
           alt={photos.garda.label}
           gradient="from-iseo-soft via-cream to-cream"
           className="absolute inset-0"
-          imgClassName="opacity-40 scale-105"
+          imgClassName="opacity-70 scale-105"
         />
         {/* readability wash */}
-        <div className="absolute inset-0 bg-gradient-to-b from-cream/60 via-cream/45 to-cream" />
+        <div className="absolute inset-0 bg-gradient-to-b from-cream/35 via-cream/25 to-cream" />
         {/* sun */}
         <div className="shimmer absolute -right-10 top-24 h-72 w-72 rounded-full bg-gradient-to-br from-sun to-bergamo opacity-30 blur-3xl md:right-24" />
         {/* lake blobs */}
@@ -150,7 +150,18 @@ export default async function Page() {
             <p className="mt-4 text-sm text-ink/55">{trip.group}</p>
           </Reveal>
 
-          <Reveal delay={420}>
+          <Reveal delay={400}>
+            <div className="mt-9">
+              <Countdown
+                compact
+                startISO={trip.startISO}
+                endISO={trip.endISO}
+                dateRange={trip.dateRange}
+              />
+            </div>
+          </Reveal>
+
+          <Reveal delay={480}>
             <a
               href="#ajakava"
               className="mt-12 inline-flex flex-col items-center gap-1 text-xs font-semibold uppercase tracking-widest text-ink/45 transition hover:text-ink"
@@ -188,13 +199,6 @@ export default async function Page() {
             </Reveal>
           ))}
         </div>
-      </section>
-
-      {/* ───────────────── COUNTDOWN ───────────────── */}
-      <section className="mx-auto mt-12 max-w-6xl px-5">
-        <Reveal>
-          <Countdown startISO={trip.startISO} endISO={trip.endISO} dateRange={trip.dateRange} />
-        </Reveal>
       </section>
 
       {/* ───────────────── LENNUD ───────────────── */}

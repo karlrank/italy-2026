@@ -70,10 +70,14 @@ function seg(s) {
   return {
     airport: s.airport?.name || s.airport?.iata || s.airport?.icao || "",
     iata: s.airport?.iata || "",
+    city: s.airport?.municipalityName || "",
+    country: s.airport?.countryCode || "",
     scheduled: s.scheduledTime?.local || null,
     revised: s.revisedTime?.local || s.actualTime?.local || null,
     terminal: s.terminal || null,
     gate: s.gate || null,
+    checkInDesk: s.checkInDesk || null,
+    baggageBelt: s.baggageBelt || null,
   };
 }
 
@@ -141,6 +145,14 @@ export async function GET(request) {
       found: true,
       status: leg.status || "Unknown",
       number: leg.number || number,
+      callSign: leg.callSign || null,
+      airline: leg.airline?.name || null,
+      aircraft: leg.aircraft?.model || null,
+      reg: leg.aircraft?.reg || null,
+      distanceKm: leg.greatCircleDistance?.km
+        ? Math.round(leg.greatCircleDistance.km)
+        : null,
+      codeshare: leg.codeshareStatus || null,
       departure: seg(leg.departure),
       arrival: seg(leg.arrival),
     };

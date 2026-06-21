@@ -19,10 +19,22 @@ function codeEmoji(code) {
 
 const dayMonth = (iso) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}`;
 
-function WeatherCard({ c, startISO, endISO }) {
+// Haversine'i kaugus km-des
+function distanceKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+function WeatherCard({ c, startISO, endISO, featured = false }) {
   const a = accentFor(c.region);
   const [data, setData] = useState(null); // {temp, code, hours:[{t,temp,code}], focusLabel, isTrip}
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(featured);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,7 +94,14 @@ function WeatherCard({ c, startISO, endISO }) {
         className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${a.gradient}`}
       />
       <div className="flex items-center justify-between">
-        <span className={`text-sm font-semibold ${a.text}`}>{c.label}</span>
+        <span className={`flex items-center gap-2 text-sm font-semibold ${a.text}`}>
+          {c.label}
+          {featured && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-ink px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-cream">
+              📍 Lähim
+            </span>
+          )}
+        </span>
         {data && (
           <span className="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-ink shadow-sm">
             <span className="text-ink/45">Praegu</span>
@@ -145,6 +164,34 @@ function WeatherCard({ c, startISO, endISO }) {
 }
 
 export default function Weather({ climate, startISO, endISO }) {
+  const [nearest, setNearest] = useState(null);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        let best = null;
+        let bestD = Infinity;
+        climate.forEach((c) => {
+          const d = distanceKm(latitude, longitude, c.lat, c.lng);
+          if (d < bestD) {
+            bestD = d;
+            best = c.region;
+          }
+        });
+        setNearest(best);
+      },
+      () => {},
+      { timeout: 8000, maximumAge: 600000 }
+    );
+  }, [climate]);
+
+  const featured = nearest ? climate.find((c) => c.region === nearest) : null;
+  const rest = featured
+    ? climate.filter((c) => c.region !== nearest)
+    : climate;
+
   return (
     <div className="rounded-3xl border border-ink/10 bg-white/70 p-5 backdrop-blur md:p-6">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -155,8 +202,25 @@ export default function Weather({ climate, startISO, endISO }) {
           tüüpiline juuli + elav seis (Open-Meteo)
         </span>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {climate.map((c) => (
+
+      {featured && (
+        <div className="mb-3">
+          <WeatherCard
+            key={featured.region}
+            c={featured}
+            startISO={startISO}
+            endISO={endISO}
+            featured
+          />
+        </div>
+      )}
+
+      <div
+        className={`grid gap-3 ${
+          featured ? "sm:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-4"
+        }`}
+      >
+        {rest.map((c) => (
           <WeatherCard key={c.region} c={c} startISO={startISO} endISO={endISO} />
         ))}
       </div>

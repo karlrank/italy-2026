@@ -41,8 +41,148 @@ function fmtDate(d) {
   });
 }
 
+function Row({ label, children }) {
+  if (children == null || children === "" || children === false) return null;
+  return (
+    <div className="flex items-baseline justify-between gap-3 py-1.5">
+      <span className="text-xs font-medium uppercase tracking-wider text-ink/45">
+        {label}
+      </span>
+      <span className="text-right text-sm font-medium text-ink">{children}</span>
+    </div>
+  );
+}
+
+function FlightDialog({ flight, live, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const st = live?.found ? STATUS[live.status] : null;
+  const dep = live?.departure;
+  const arr = live?.arrival;
+
+  return (
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-ink/50 p-4 backdrop-blur-sm sm:p-8"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="my-auto w-full max-w-lg overflow-hidden rounded-3xl border border-ink/10 bg-cream shadow-2xl"
+      >
+        <div className="h-1.5 w-full bg-gradient-to-r from-garda to-iseo" />
+        <div className="flex items-start justify-between gap-3 px-6 pt-5">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-garda-soft px-2.5 py-0.5 text-xs font-semibold text-garda">
+              <Icon name="plane" className="h-3.5 w-3.5" />
+              {flight.direction}
+            </span>
+            <h2 className="mt-2 font-display text-2xl font-semibold text-ink">
+              {flight.flightNumber || "Lend"}
+            </h2>
+            <p className="text-sm text-ink/55">{fmtDate(flight.date)}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-ink/50 transition hover:bg-ink/5"
+            aria-label="Sulge"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="px-6 pb-6">
+          {st && (
+            <span className={`mt-3 inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${st.cls}`}>
+              {st.label}
+            </span>
+          )}
+
+          {/* Route */}
+          <div className="mt-4 flex items-center gap-3 rounded-2xl bg-white p-4">
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-display text-lg font-semibold text-ink">
+                {dep?.iata || flight.from || "—"}
+              </p>
+              <p className="truncate text-xs text-ink/55">
+                {dep?.airport || dep?.city || ""}
+              </p>
+            </div>
+            <Icon name="plane" className="h-5 w-5 shrink-0 text-garda" />
+            <div className="min-w-0 flex-1 text-right">
+              <p className="truncate font-display text-lg font-semibold text-ink">
+                {arr?.iata || flight.to || "—"}
+              </p>
+              <p className="truncate text-xs text-ink/55">
+                {arr?.airport || arr?.city || ""}
+              </p>
+            </div>
+          </div>
+
+          {!live?.found && (
+            <p className="mt-4 text-sm text-ink/55">
+              {live?.configured === false
+                ? "Elav info nõuab API võtit."
+                : "Elavat infot ei leitud (ilmub reisile lähemal)."}
+            </p>
+          )}
+
+          {live?.found && (
+            <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
+              <div className="divide-y divide-ink/8">
+                <p className="pb-1 text-xs font-semibold uppercase tracking-wider text-garda">
+                  Väljumine
+                </p>
+                <Row label="Plaanis">{fmt(dep?.scheduled)}</Row>
+                {dep?.revised && dep.revised !== dep.scheduled && (
+                  <Row label="Uuendatud">{fmt(dep.revised)}</Row>
+                )}
+                <Row label="Terminal">{dep?.terminal}</Row>
+                <Row label="Värav">{dep?.gate}</Row>
+                <Row label="Check-in">{dep?.checkInDesk}</Row>
+              </div>
+              <div className="divide-y divide-ink/8">
+                <p className="pb-1 text-xs font-semibold uppercase tracking-wider text-iseo">
+                  Saabumine
+                </p>
+                <Row label="Plaanis">{fmt(arr?.scheduled)}</Row>
+                {arr?.revised && arr.revised !== arr.scheduled && (
+                  <Row label="Uuendatud">{fmt(arr.revised)}</Row>
+                )}
+                <Row label="Terminal">{arr?.terminal}</Row>
+                <Row label="Pagasilint">{arr?.baggageBelt}</Row>
+              </div>
+            </div>
+          )}
+
+          {live?.found && (
+            <div className="mt-4 divide-y divide-ink/8 border-t border-ink/8 pt-2">
+              <Row label="Lennufirma">{live.airline}</Row>
+              <Row label="Lennuk">
+                {[live.aircraft, live.reg].filter(Boolean).join(" · ") || null}
+              </Row>
+              <Row label="Vahemaa">{live.distanceKm ? `${live.distanceKm} km` : null}</Row>
+              <Row label="Kutsung">{live.callSign}</Row>
+            </div>
+          )}
+
+          {flight.note && (
+            <p className="mt-4 rounded-2xl bg-white p-3 text-sm text-ink/70">
+              {flight.note}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function FlightCard({ flight, index = 0 }) {
   const [live, setLive] = useState(null); // null | {configured, found, ...}
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     if (!flight.flightNumber || !flight.date) return;
@@ -79,7 +219,11 @@ function FlightCard({ flight, index = 0 }) {
   const arr = live?.arrival;
 
   return (
-    <article className="overflow-hidden rounded-3xl border border-ink/10 bg-white shadow-sm">
+    <>
+    <article
+      onClick={() => setShowDetails(true)}
+      className="group cursor-pointer overflow-hidden rounded-3xl border border-ink/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-24px_rgba(42,33,24,0.5)]"
+    >
       <div className="h-1.5 w-full bg-gradient-to-r from-garda to-iseo" />
       <div className="p-6">
         <div className="flex items-start justify-between gap-3">
@@ -153,8 +297,21 @@ function FlightCard({ flight, index = 0 }) {
         {flight.note && (
           <p className="mt-2 text-sm text-ink/60">{flight.note}</p>
         )}
+
+        <p className="mt-3 flex items-center gap-1 text-xs font-semibold text-garda/70 transition group-hover:text-garda">
+          Vaata üksikasju
+          <Icon name="arrow" className="h-3.5 w-3.5" />
+        </p>
       </div>
     </article>
+      {showDetails && (
+        <FlightDialog
+          flight={flight}
+          live={live}
+          onClose={() => setShowDetails(false)}
+        />
+      )}
+    </>
   );
 }
 

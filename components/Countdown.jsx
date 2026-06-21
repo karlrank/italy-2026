@@ -11,7 +11,7 @@ function diffParts(ms) {
   return { days, hours, minutes, seconds };
 }
 
-export default function Countdown({ startISO, endISO, dateRange }) {
+export default function Countdown({ startISO, endISO, dateRange, compact = false }) {
   const start = new Date(startISO).getTime();
   const end = new Date(endISO).getTime();
   const [now, setNow] = useState(null);
@@ -33,6 +33,39 @@ export default function Countdown({ startISO, endISO, dateRange }) {
     { v: parts.minutes, l: "minutit" },
     { v: parts.seconds, l: "sekundit" },
   ];
+
+  if (compact) {
+    const headline =
+      phase === "during"
+        ? "Olemegi Itaalias 🇮🇹"
+        : phase === "after"
+          ? "Reis on läbi · täname 👋"
+          : "Reisini on jäänud";
+    return (
+      <div className="flex flex-col items-center gap-2.5">
+        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-ink/50">
+          {headline}
+        </span>
+        {phase === "before" || phase === "loading" ? (
+          <div className="flex gap-2 sm:gap-2.5">
+            {boxes.map((b) => (
+              <div
+                key={b.l}
+                className="flex w-[62px] flex-col items-center rounded-2xl border border-ink/10 bg-white/60 px-2 py-2 backdrop-blur sm:w-[68px]"
+              >
+                <span className="font-display text-2xl font-semibold tabular-nums text-ink sm:text-3xl">
+                  {now == null ? "—" : String(b.v).padStart(2, "0")}
+                </span>
+                <span className="text-[0.6rem] font-medium uppercase tracking-wider text-ink/45">
+                  {b.l}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="relative overflow-hidden rounded-3xl bg-ink px-6 py-8 text-cream shadow-[0_24px_60px_-40px_rgba(42,33,24,0.7)] md:px-10 md:py-10">
