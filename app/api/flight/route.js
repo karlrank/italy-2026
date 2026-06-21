@@ -1,14 +1,69 @@
 // Elav lennustaatus. Pärib lennuandmete API-st (AeroDataBox / RapidAPI)
 // serveripoolselt, et API võti jääks salajaseks. Kaitstud middleware'iga.
 //
-// Aktiveerub, kui keskkonnamuutuja FLIGHT_API_KEY on seatud.
-//   FLIGHT_API_KEY  – RapidAPI võti
-//   FLIGHT_API_HOST – vaikimisi aerodatabox.p.rapidapi.com
+//   FLIGHT_API_KEY   – RapidAPI võti (kohustuslik)
+//   FLIGHT_API_HOST  – vaikimisi aerodatabox.p.rapidapi.com
+//   FLIGHT_CACHE_TTL – edukate tulemuste vahemälu sekundites (vaikimisi 600)
+//
+// Tulemused vahemälustatakse KV-s (kui on) või protsessimälus, et hoida
+// päringuid alla pakettide kiiruspiiri. 429/5xx korral korratakse viivitusega.
+
+import { kvConfigured, kvGet, kvSetEx } from "@/lib/kv";
 
 export const dynamic = "force-dynamic";
 
 const KEY = process.env.FLIGHT_API_KEY || "";
 const HOST = process.env.FLIGHT_API_HOST || "aerodatabox.p.rapidapi.com";
+const OK_TTL = Number(process.env.FLIGHT_CACHE_TTL || 600); // 10 min
+const FAIL_TTL = 60; // ajutiste vigade lühike vahemälu
+
+const mem = new Map(); // varuvahemälu, kui KV puudub
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function getCached(key) {
+  if (kvConfigured) {
+    try {
+      return await kvGet(key);
+    } catch {
+      return null;
+    }
+  }
+  const e = mem.get(key);
+  if (e && e.exp > Date.now()) return e.value;
+  if (e) mem.delete(key);
+  return null;
+}
+
+async function setCached(key, value, ttl) {
+  if (kvConfigured) {
+    try {
+      await kvSetEx(key, value, ttl);
+    } catch {}
+  } else {
+    mem.set(key, { value, exp: Date.now() + ttl * 1000 });
+  }
+}
+
+// fetch korduskatsetega 429 / 5xx / võrguvea korral
+async function fetchUpstream(url, headers) {
+  const tries = 3;
+  let resp = null;
+  for (let i = 0; i < tries; i++) {
+    try {
+      resp = await fetch(url, { headers, cache: "no-store" });
+    } catch (e) {
+      if (i === tries - 1) throw e;
+      await sleep(600 * (i + 1));
+      continue;
+    }
+    if ((resp.status === 429 || resp.status >= 500) && i < tries - 1) {
+      await sleep(800 * (i + 1) + Math.floor(Math.random() * 400));
+      continue;
+    }
+    return resp;
+  }
+  return resp;
+}
 
 function seg(s) {
   if (!s) return null;
@@ -34,14 +89,19 @@ export async function GET(request) {
     return Response.json({ configured: true, error: "bad params" }, { status: 400 });
   }
 
+  const cacheKey = `flight:${number}:${date}`;
+  const cached = await getCached(cacheKey);
+  if (cached) return Response.json({ ...cached, cached: true });
+
+  let result;
   try {
     const url = `https://${HOST}/flights/number/${number}/${date}?withAircraftImage=false&withLocation=false`;
-    const r = await fetch(url, {
-      headers: { "X-RapidAPI-Key": KEY, "X-RapidAPI-Host": HOST },
-      cache: "no-store",
+    const r = await fetchUpstream(url, {
+      "X-RapidAPI-Key": KEY,
+      "X-RapidAPI-Host": HOST,
     });
 
-    const raw = await r.text();
+    const raw = r ? await r.text() : "";
     let data = null;
     try {
       data = raw ? JSON.parse(raw) : null;
@@ -49,37 +109,43 @@ export async function GET(request) {
       data = null;
     }
 
-    if (!r.ok) {
+    if (!r || !r.ok) {
       const message =
         (data && (data.message || data.error)) || raw.slice(0, 200) || "";
-      console.error(`[flight] ${number} ${date} → ${r.status}: ${message}`);
-      return Response.json({
+      console.error(`[flight] ${number} ${date} → ${r?.status}: ${message}`);
+      result = {
         configured: true,
         found: false,
-        upstreamStatus: r.status,
+        upstreamStatus: r?.status || 0,
         message,
-      });
+      };
+      // 429 ei vahemälusta — lase järgmisel katsel uuesti proovida
+      if (r?.status !== 429) await setCached(cacheKey, result, FAIL_TTL);
+      return Response.json(result);
     }
 
     const leg = Array.isArray(data) ? data[0] : data?.flights?.[0] || null;
     if (!leg) {
-      console.error(`[flight] ${number} ${date} → 200 but no legs`);
-      return Response.json({
+      result = {
         configured: true,
         found: false,
         upstreamStatus: 200,
         message: "Selle numbri ja kuupäevaga lendu ei leitud.",
-      });
+      };
+      await setCached(cacheKey, result, FAIL_TTL);
+      return Response.json(result);
     }
 
-    return Response.json({
+    result = {
       configured: true,
       found: true,
       status: leg.status || "Unknown",
       number: leg.number || number,
       departure: seg(leg.departure),
       arrival: seg(leg.arrival),
-    });
+    };
+    await setCached(cacheKey, result, OK_TTL);
+    return Response.json(result);
   } catch (e) {
     console.error(`[flight] ${number} ${date} → exception: ${e?.message}`);
     return Response.json({ configured: true, found: false, error: "fetch failed" });

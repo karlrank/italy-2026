@@ -41,7 +41,7 @@ function fmtDate(d) {
   });
 }
 
-function FlightCard({ flight }) {
+function FlightCard({ flight, index = 0 }) {
   const [live, setLive] = useState(null); // null | {configured, found, ...}
 
   useEffect(() => {
@@ -61,16 +61,18 @@ function FlightCard({ flight }) {
         if (!cancelled) setLive({ configured: true, found: false });
       }
     };
-    load();
+    // Hajuta päringud, et mitte tabada API kiiruspiiri (nt 1 päring/sek)
+    const startId = setTimeout(load, index * 1500);
     const id = setInterval(load, 5 * 60 * 1000); // iga 5 min
     const onVis = () => document.visibilityState === "visible" && load();
     document.addEventListener("visibilitychange", onVis);
     return () => {
       cancelled = true;
+      clearTimeout(startId);
       clearInterval(id);
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [flight.flightNumber, flight.date]);
+  }, [flight.flightNumber, flight.date, index]);
 
   const st = live?.found ? STATUS[live.status] : null;
   const dep = live?.departure;
@@ -160,8 +162,8 @@ export default function Flights({ flights }) {
   if (!flights?.length) return null;
   return (
     <div className="grid gap-5 md:grid-cols-2">
-      {flights.map((f) => (
-        <FlightCard key={f.id || f.flightNumber + f.date} flight={f} />
+      {flights.map((f, i) => (
+        <FlightCard key={f.id || f.flightNumber + f.date} flight={f} index={i} />
       ))}
     </div>
   );
