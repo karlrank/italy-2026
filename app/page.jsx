@@ -225,7 +225,7 @@ export default async function Page() {
           <div className="absolute right-4 top-4 z-20">
             <EditButton section="climate" label="Muuda ilma" />
           </div>
-          <Weather climate={climate} />
+          <Weather climate={climate} startISO={trip.startISO} endISO={trip.endISO} />
         </Reveal>
       </section>
 

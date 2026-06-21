@@ -1,11 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { accentFor } from "@/components/accents";
 import { Icon } from "@/components/Icons";
 
 export default function Itinerary({ days, dayFocus }) {
   const [active, setActive] = useState(0);
+  const [todayIndex, setTodayIndex] = useState(-1);
+
+  // Leia tänane reisipäev (kliendipoolselt, et vältida hydratsiooni viga)
+  useEffect(() => {
+    const d = new Date();
+    const key = `${String(d.getDate()).padStart(2, "0")}.${String(
+      d.getMonth() + 1
+    ).padStart(2, "0")}`;
+    const idx = days.findIndex((x) => x.date === key);
+    setTodayIndex(idx);
+    if (idx >= 0) setActive(idx);
+  }, [days]);
+
   const day = days[active];
   const a = accentFor(day.accent);
 
@@ -31,12 +44,21 @@ export default function Itinerary({ days, dayFocus }) {
             <button
               key={d.day}
               onClick={() => setActive(i)}
-              className={`group flex shrink-0 flex-col items-center rounded-2xl border px-4 py-3 transition-all duration-300 ${
+              className={`group relative flex shrink-0 flex-col items-center rounded-2xl border px-4 py-3 transition-all duration-300 ${
                 isActive
                   ? `${da.bgSolid} border-transparent text-white shadow-lg`
                   : "border-ink/10 bg-white/60 text-ink/70 hover:border-ink/20 hover:bg-white"
+              } ${
+                i === todayIndex
+                  ? "ring-2 ring-sun ring-offset-2 ring-offset-cream"
+                  : ""
               }`}
             >
+              {i === todayIndex && (
+                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-sun px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide text-ink shadow">
+                  Täna
+                </span>
+              )}
               <span
                 className={`text-[0.65rem] font-semibold uppercase tracking-wider ${
                   isActive ? "text-white/80" : "text-ink/45"
