@@ -265,7 +265,7 @@ export default async function Page() {
                       src={(photos[s.photo] || photos.bergamo).src}
                       alt={(photos[s.photo] || photos.bergamo).label}
                       gradient={a.gradient}
-                      className="h-44 w-full"
+                      className="relative h-44 w-full"
                       imgClassName="transition-transform duration-700 group-hover:scale-105"
                     >
                       <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/15 to-transparent" />

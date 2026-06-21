@@ -14,7 +14,7 @@ export default function Photo({
   const [failed, setFailed] = useState(false);
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div className={`overflow-hidden ${className}`}>
       <div
         className={`absolute inset-0 bg-gradient-to-br ${gradient}`}
         aria-hidden="true"

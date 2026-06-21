@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Icon } from "@/components/Icons";
 
 // API staatus → eestikeelne silt + värv
@@ -64,7 +65,9 @@ function FlightDialog({ flight, live, onClose }) {
   const dep = live?.departure;
   const arr = live?.arrival;
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div
       onClick={onClose}
       className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-ink/50 p-4 backdrop-blur-sm sm:p-8"
@@ -176,7 +179,8 @@ function FlightDialog({ flight, live, onClose }) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

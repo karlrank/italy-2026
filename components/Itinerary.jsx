@@ -128,14 +128,14 @@ export default function Itinerary({ days, dayFocus }) {
           </div>
 
           {/* Right: timeline of items */}
-          <ol className="relative space-y-5 pl-9">
+          <ol className="relative space-y-5">
             {/* dashed line — runs through the checkpoint centers (x = 10px) */}
             <span
               aria-hidden="true"
               className="absolute bottom-3 left-[9px] top-3 border-l-2 border-dashed border-ink/15"
             />
             {day.items.map((item, i) => (
-              <li key={i} className="relative">
+              <li key={i} className="relative pl-9">
                 <span
                   className={`absolute left-0 top-0.5 flex h-5 w-5 items-center justify-center rounded-full ${a.bgSolid} text-white ring-4 ring-white`}
                 >
