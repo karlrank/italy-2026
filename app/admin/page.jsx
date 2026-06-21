@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   ListEditor,
   StringList,
+  LabeledList,
   ObjectFields,
 } from "@/components/admin/Editors";
 
@@ -439,7 +440,7 @@ export default function AdminPage() {
                 items: [],
               })}
               renderExtra={(cat, update) => (
-                <StringList
+                <LabeledList
                   label="Esemed"
                   items={cat.items || []}
                   onChange={(items) => update({ ...cat, items })}

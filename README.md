@@ -61,9 +61,13 @@ Enamikku sisust saab muuta otse veebis, ilma koodi puutumata, lehel **`/admin`**
 
 Redigeerida saab: reisi pealkiri/kuupäevad/pered, kiirfaktid, **ajakava**
 (päevad + tegevused), **majutus**, **tegevused**, **eelarve**, **kaardi
-peatused**, **ilm**, piletivihjed/lingid, praktiline info, pakkimiskategooriad
+peatused**, **ilm**, piletivihjed/lingid, praktiline info, **pakkimisnimekiri**
 ja fotode URL-id. Iga nimekirja saab täiendada, ümber järjestada (↑/↓) ja
 kustutada.
+
+Pakkimisnimekiri on **täielikult CMS-is**: esemeid saab lisada/eemaldada nii
+`/admin` all kui ka otse pakkimissektsioonis (KV-ga). Ainult linnukesed
+(„pakitud“) on jooksev olek, mis sünkroonib perede vahel.
 
 Kuidas see töötab:
 

@@ -119,6 +119,55 @@ export function StringList({ label, items = [], onChange, placeholder }) {
   );
 }
 
+// Nimekiri objektidest { id, label } — säilitab id-d (linnukeste jaoks)
+export function LabeledList({ label, items = [], onChange, placeholder }) {
+  const rid = () =>
+    "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const update = (i, v) => {
+    const next = items.map((it, idx) => (idx === i ? { ...it, label: v } : it));
+    onChange(next);
+  };
+  const remove = (i) => onChange(items.filter((_, idx) => idx !== i));
+  const add = () => onChange([...items, { id: rid(), label: "" }]);
+
+  return (
+    <div>
+      {label && (
+        <span className="mb-1 block text-[0.7rem] font-semibold uppercase tracking-wider text-ink/45">
+          {label}
+        </span>
+      )}
+      <div className="space-y-2">
+        {items.map((it, i) => (
+          <div key={it.id || i} className="flex gap-2">
+            <input
+              className={inputBase}
+              value={it.label || ""}
+              placeholder={placeholder}
+              onChange={(e) => update(i, e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => remove(i)}
+              className="shrink-0 rounded-lg border border-ink/15 px-3 text-sm text-ink/50 transition hover:border-bergamo hover:text-bergamo"
+              aria-label="Eemalda"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={add}
+        className="mt-2 rounded-lg border border-dashed border-ink/25 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:border-iseo hover:text-iseo"
+      >
+        + Lisa rida
+      </button>
+    </div>
+  );
+}
+
 export function ListEditor({
   items = [],
   fields,
