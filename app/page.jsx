@@ -10,6 +10,7 @@ import Countdown from "@/components/Countdown";
 import TripMap from "@/components/TripMap";
 import Weather from "@/components/Weather";
 import Packing from "@/components/Packing";
+import Flights from "@/components/Flights";
 import Photo from "@/components/Photo";
 import LogoutButton from "@/components/LogoutButton";
 
@@ -46,6 +47,7 @@ export default async function Page() {
   const content = await getContent();
   const {
     trip,
+    flights,
     quickFacts,
     stays,
     itinerary,
@@ -192,6 +194,19 @@ export default async function Page() {
       <section className="mx-auto mt-12 max-w-6xl px-5">
         <Reveal>
           <Countdown startISO={trip.startISO} endISO={trip.endISO} dateRange={trip.dateRange} />
+        </Reveal>
+      </section>
+
+      {/* ───────────────── LENNUD ───────────────── */}
+      <section id="lennud" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
+        <SectionHeading
+          kicker="Lennud"
+          title="Lennuinfo"
+          editKey="flights"
+          sub="Lisa lennunumbrid, et näha elavat staatust — väljumis- ja saabumisajad, terminal ja värav."
+        />
+        <Reveal>
+          <Flights flights={flights} />
         </Reveal>
       </section>
 

@@ -7,6 +7,7 @@ Marsruut: **Malpensa → Bergamo → Lake Iseo → Gardajärv → Milano**
 Leht sisaldab:
 
 - ⏳ **Loendus** — reaalajas taimer reisi alguseni
+- ✈️ **Lennud** — sisesta lennunumbrid, näe elavat staatust (vt allpool)
 - 🗺️ **Interaktiivne kaart** — kogu marsruut, ööbimised ja peatused (Leaflet). Ajakavast saab vajutada „Vaata kaardil“ ja kaart lendab õigesse kohta.
 - 🌤️ **Ilm** — tüüpiline juuli iga peatuse jaoks + elav hetketemperatuur (Open-Meteo)
 - 📅 **Ajakava** — interaktiivne päev-päevalt vaade (8 päeva)
@@ -86,6 +87,24 @@ Kuidas see töötab:
 
 Turvalisus: `/admin` ja sisu-API (`/api/content`) on middleware'iga kaitstud
 (vajavad sisselogimist), nii et muuta saavad ainult parooli teadjad.
+
+## Lennud — elav staatus
+
+Lennusektsioon näitab sisestatud lende (suund, marsruut, kuupäev). Kui lisad
+**lennunumbri** (CMS-is) ja **lennu-API võtme**, tõmmatakse elav staatus:
+väljumis-/saabumisaeg, terminal, värav ja olek (plaanis / õhus / maandunud /
+hilineb).
+
+Aktiveerimiseks lisa Vercelis keskkonnamuutuja:
+
+```
+FLIGHT_API_KEY = sinu-rapidapi-võti
+```
+
+Tasuta võtme saab [AeroDataBox / RapidAPI](https://rapidapi.com/aedbx-aedbx/api/aerodatabox)
+lehelt. Võti jääb serverisse (lennupäring käib läbi kaitstud `/api/flight`),
+nii et see ei leki külastajatele. Ilma võtmeta näidatakse ainult sisestatud
+infot.
 
 ## Pakkimisnimekiri — jagatud salvestus
 

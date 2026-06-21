@@ -12,6 +12,30 @@ export const trip = {
 };
 
 // ─────────────────────────────────────────────────────────────
+// LENNUD — täida lennunumbrid CMS-is; elav staatus tuleb API-st
+// ─────────────────────────────────────────────────────────────
+export const flights = [
+  {
+    id: "out",
+    direction: "Väljalend",
+    flightNumber: "",
+    date: "2026-07-24",
+    from: "Tallinn (TLL)",
+    to: "Milano–Malpensa (MXP)",
+    note: "",
+  },
+  {
+    id: "ret",
+    direction: "Tagasilend",
+    flightNumber: "",
+    date: "2026-07-31",
+    from: "Milano–Malpensa (MXP)",
+    to: "Tallinn (TLL)",
+    note: "",
+  },
+];
+
+// ─────────────────────────────────────────────────────────────
 // KAART — peatused ja marsruut
 // ─────────────────────────────────────────────────────────────
 // type: "airport" | "stay" | "spot"
