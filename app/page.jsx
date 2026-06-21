@@ -202,7 +202,7 @@ export default async function Page() {
       </section>
 
       {/* ───────────────── LENNUD ───────────────── */}
-      <section id="lennud" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
+      <section id="lennud" className="mx-auto max-w-6xl px-5 pt-20 pb-10 md:pt-28 md:pb-12">
         <SectionHeading
           kicker="Lennud"
           title="Lennuinfo"
@@ -215,7 +215,7 @@ export default async function Page() {
       </section>
 
       {/* ───────────────── KAART ───────────────── */}
-      <section id="kaart" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
+      <section id="kaart" className="mx-auto max-w-6xl px-5 pt-12 pb-24 md:pt-16 md:pb-32">
         <SectionHeading
           kicker="Marsruut"
           title="Reisi kaart"
