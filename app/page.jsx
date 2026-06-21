@@ -8,6 +8,8 @@ import {
   ticketTips,
   ticketLinks,
   practicalNotes,
+  photos,
+  stayPhotoKey,
 } from "@/data/trip";
 import { accentFor } from "@/components/accents";
 import { Icon } from "@/components/Icons";
@@ -17,6 +19,9 @@ import Itinerary from "@/components/Itinerary";
 import Activities from "@/components/Activities";
 import Countdown from "@/components/Countdown";
 import TripMap from "@/components/TripMap";
+import Weather from "@/components/Weather";
+import Packing from "@/components/Packing";
+import Photo from "@/components/Photo";
 
 const stayTotalPerFamily = stays.reduce((s, x) => s + x.pricePerFamily, 0);
 const eur = (n) =>
@@ -44,8 +49,16 @@ export default function Page() {
 
       {/* ───────────────── HERO ───────────────── */}
       <section className="relative flex min-h-[100svh] items-center overflow-hidden">
-        {/* gradient sky */}
-        <div className="absolute inset-0 bg-gradient-to-b from-iseo-soft via-cream to-cream" />
+        {/* photo backdrop */}
+        <Photo
+          src={photos.garda.src}
+          alt={photos.garda.label}
+          gradient="from-iseo-soft via-cream to-cream"
+          className="absolute inset-0"
+          imgClassName="opacity-40 scale-105"
+        />
+        {/* readability wash */}
+        <div className="absolute inset-0 bg-gradient-to-b from-cream/60 via-cream/45 to-cream" />
         {/* sun */}
         <div className="shimmer absolute -right-10 top-24 h-72 w-72 rounded-full bg-gradient-to-br from-sun to-bergamo opacity-30 blur-3xl md:right-24" />
         {/* lake blobs */}
@@ -160,6 +173,9 @@ export default function Page() {
         <Reveal>
           <TripMap />
         </Reveal>
+        <Reveal className="mt-6">
+          <Weather />
+        </Reveal>
       </section>
 
       {/* ───────────────── AJAKAVA ───────────────── */}
@@ -188,31 +204,34 @@ export default function Page() {
               return (
                 <Reveal key={s.place} delay={i * 80}>
                   <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-ink/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_50px_-30px_rgba(42,33,24,0.5)]">
-                    <div className={`h-2 w-full bg-gradient-to-r ${a.gradient}`} />
-                    <div className="flex flex-1 flex-col p-6">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <span
-                            className={`inline-flex items-center gap-1.5 rounded-full ${a.bgSoft} ${a.text} px-2.5 py-0.5 text-xs font-semibold`}
-                          >
-                            {s.dates} · {s.nights}
-                          </span>
-                          <h3 className="mt-2.5 font-display text-2xl font-semibold text-ink">
-                            {s.place}
-                          </h3>
-                        </div>
-                        <span
-                          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                            s.status === "paid"
-                              ? "bg-olive/15 text-olive"
-                              : "bg-sun/20 text-[#9a6b15]"
-                          }`}
-                        >
-                          {s.payment}
+                    <Photo
+                      src={photos[stayPhotoKey[s.place]].src}
+                      alt={photos[stayPhotoKey[s.place]].label}
+                      gradient={a.gradient}
+                      className="h-44 w-full"
+                      imgClassName="transition-transform duration-700 group-hover:scale-105"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/15 to-transparent" />
+                      <span
+                        className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm ${
+                          s.status === "paid"
+                            ? "bg-olive text-white"
+                            : "bg-sun text-ink"
+                        }`}
+                      >
+                        {s.payment}
+                      </span>
+                      <div className="absolute inset-x-0 bottom-0 p-4">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-0.5 text-xs font-semibold text-ink">
+                          {s.dates} · {s.nights}
                         </span>
+                        <h3 className="mt-1.5 font-display text-2xl font-semibold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
+                          {s.place}
+                        </h3>
                       </div>
-
-                      <p className="mt-3 flex items-center gap-2 text-sm text-ink/60">
+                    </Photo>
+                    <div className="flex flex-1 flex-col p-6">
+                      <p className="flex items-center gap-2 text-sm text-ink/60">
                         <Icon name="pin" className="h-4 w-4 shrink-0" />
                         {s.address}
                       </p>
@@ -270,8 +289,22 @@ export default function Page() {
         </Reveal>
       </section>
 
+      {/* ───────────────── PAKKIMINE ───────────────── */}
+      <section id="pakkimine" className="bg-white/50 py-24 md:py-32">
+        <div className="mx-auto max-w-6xl px-5">
+          <SectionHeading
+            kicker="Enne minekut"
+            title="Pakkimisnimekiri"
+            sub="Jagatud nimekiri mõlemale perele. Linnuke salvestub — ühenda Vercel KV ja see sünkroonib kõigi seadmete vahel."
+          />
+          <Reveal>
+            <Packing />
+          </Reveal>
+        </div>
+      </section>
+
       {/* ───────────────── EELARVE ───────────────── */}
-      <section id="eelarve" className="bg-white/50 py-24 md:py-32">
+      <section id="eelarve" className="py-24 md:py-32">
         <div className="mx-auto max-w-6xl px-5">
           <SectionHeading
             kicker="Raha"
@@ -414,6 +447,32 @@ export default function Page() {
                 )}
               </span>
             ))}
+          </div>
+
+          <div className="mx-auto mt-10 max-w-2xl border-t border-cream/15 pt-6">
+            <p className="text-xs font-semibold uppercase tracking-wider text-cream/40">
+              Fotod · Wikimedia Commons
+            </p>
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-cream/50">
+              {Object.values(photos).map((p, i) => (
+                <span key={p.page} className="flex items-center gap-3">
+                  <a
+                    href={p.page}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition hover:text-sun"
+                  >
+                    {p.label}
+                  </a>
+                  {i < Object.values(photos).length - 1 && (
+                    <span className="text-cream/25">·</span>
+                  )}
+                </span>
+              ))}
+            </div>
+            <p className="mt-2 text-[0.7rem] text-cream/35">
+              Kaart © OpenStreetMap & CARTO · ilmaandmed Open-Meteo
+            </p>
           </div>
         </div>
       </footer>

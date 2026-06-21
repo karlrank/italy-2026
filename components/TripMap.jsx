@@ -41,6 +41,7 @@ export default function TripMap() {
       }).addTo(map);
 
       // Markers
+      const markersByName = {};
       mapStops.forEach((s) => {
         const color = hexFor(s.region);
         const isStay = s.type === "stay";
@@ -55,7 +56,7 @@ export default function TripMap() {
           iconAnchor: [size / 2, size / 2],
           popupAnchor: [0, -size / 2 + 2],
         });
-        L.marker([s.lat, s.lng], { icon, riseOnHover: true })
+        const marker = L.marker([s.lat, s.lng], { icon, riseOnHover: true })
           .addTo(map)
           .bindPopup(
             `<div class="pop"><strong>${s.name}</strong>${
@@ -63,10 +64,21 @@ export default function TripMap() {
             }</div>`,
             { closeButton: false }
           );
+        markersByName[s.name] = { marker, lat: s.lat, lng: s.lng };
       });
 
       const bounds = L.latLngBounds(mapStops.map((s) => [s.lat, s.lng]));
       map.fitBounds(bounds, { padding: [45, 45] });
+
+      // Ajakavast tulev "Vaata kaardil" sündmus
+      const onFocus = (e) => {
+        const entry = markersByName[e.detail?.name];
+        if (entry) {
+          map.flyTo([entry.lat, entry.lng], 12, { duration: 1.2 });
+          entry.marker.openPopup();
+        }
+      };
+      window.addEventListener("trip:focus", onFocus);
 
       // Ensure correct sizing once laid out / visible
       const fix = () => map.invalidateSize();
@@ -85,6 +97,7 @@ export default function TripMap() {
       map._cleanupExtras = () => {
         clearTimeout(t);
         if (io) io.disconnect();
+        window.removeEventListener("trip:focus", onFocus);
       };
     })();
 

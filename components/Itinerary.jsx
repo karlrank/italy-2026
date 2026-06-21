@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { itinerary } from "@/data/trip";
+import { itinerary, dayFocus } from "@/data/trip";
 import { accentFor } from "@/components/accents";
 import { Icon } from "@/components/Icons";
 
@@ -9,6 +9,17 @@ export default function Itinerary() {
   const [active, setActive] = useState(0);
   const day = itinerary[active];
   const a = accentFor(day.accent);
+
+  const focusOnMap = () => {
+    const name = dayFocus[day.day];
+    if (!name) return;
+    const el = document.getElementById("kaart");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(
+      () => window.dispatchEvent(new CustomEvent("trip:focus", { detail: { name } })),
+      550
+    );
+  };
 
   return (
     <div>
@@ -82,6 +93,16 @@ export default function Itinerary() {
                 <Icon name="warning" className="h-5 w-5 shrink-0 text-sun" />
                 <span>{day.warning}</span>
               </div>
+            )}
+            {dayFocus[day.day] && (
+              <button
+                onClick={focusOnMap}
+                className={`mt-5 inline-flex items-center gap-2 rounded-full ${a.bgSoft} ${a.text} px-4 py-2 text-sm font-semibold transition hover:brightness-95`}
+              >
+                <Icon name="pin" className="h-4 w-4" />
+                Vaata kaardil
+                <Icon name="arrow" className="h-4 w-4" />
+              </button>
             )}
           </div>
 
