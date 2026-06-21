@@ -100,6 +100,15 @@ export const SECTIONS = [
       { key: "name", label: "Nimi" },
       { key: "area", label: "Piirkond / linn (kaardi jaoks)" },
       { key: "accent", label: "Värv", type: "select", options: opt.accent },
+      {
+        key: "type",
+        label: "Tüüp",
+        type: "select",
+        options: [
+          { value: "restoran", label: "Restoran" },
+          { value: "gelato", label: "Jäätis 🍦" },
+        ],
+      },
       { key: "price", label: "Hinnatase (nt €€)" },
       { key: "hours", label: "Lahtiolek (valikuline)" },
       { key: "url", label: "Ametlik link (valikuline)", full: true },
@@ -110,6 +119,7 @@ export const SECTIONS = [
       name: "",
       area: "",
       accent: "garda",
+      type: "restoran",
       price: "€€",
       hours: "",
       url: "",

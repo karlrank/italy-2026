@@ -23,7 +23,11 @@ export default function Itinerary({ days, dayFocus, food = [] }) {
 
   const day = days[active];
   const a = accentFor(day.accent);
-  const dayFood = food.filter((f) => f.accent === day.accent).slice(0, 3);
+  const regionFood = food.filter((f) => f.accent === day.accent);
+  const dayFood = [
+    ...regionFood.filter((f) => f.type !== "gelato").slice(0, 2),
+    ...regionFood.filter((f) => f.type === "gelato").slice(0, 1),
+  ];
 
   const focusOnMap = () => {
     const name = dayFocus[day.day];
@@ -144,6 +148,7 @@ export default function Itinerary({ days, dayFocus, food = [] }) {
                         className="group flex items-baseline justify-between gap-2 text-sm"
                       >
                         <span className="font-medium text-ink/85 underline-offset-2 group-hover:text-bergamo group-hover:underline">
+                          {f.type === "gelato" ? "🍦 " : ""}
                           {f.name}
                         </span>
                         <span className="shrink-0 text-xs text-ink/45">

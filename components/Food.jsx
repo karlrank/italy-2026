@@ -17,11 +17,17 @@ export default function Food({ food }) {
     return seen;
   }, [food]);
 
-  const shown = filter === "all" ? food : food.filter((f) => f.accent === filter);
+  const shown =
+    filter === "all"
+      ? food
+      : filter === "gelato"
+        ? food.filter((f) => f.type === "gelato")
+        : food.filter((f) => f.accent === filter);
 
   const pills = [
     { key: "all", label: "Kõik" },
     ...regions.map((r) => ({ key: r, label: accentFor(r).label })),
+    { key: "gelato", label: "🍦 Jäätis" },
   ];
 
   return (
@@ -29,7 +35,8 @@ export default function Food({ food }) {
       <div className="mb-9 flex flex-wrap justify-center gap-2.5">
         {pills.map((p) => {
           const isActive = filter === p.key;
-          const a = p.key === "all" ? null : accentFor(p.key);
+          const a =
+            p.key === "all" || p.key === "gelato" ? null : accentFor(p.key);
           return (
             <button
               key={p.key}
@@ -67,9 +74,18 @@ export default function Food({ food }) {
                   <Icon name="pin" className="h-3 w-3" />
                   {f.area}
                 </span>
-                {f.price && (
-                  <span className="text-sm font-semibold text-olive">{f.price}</span>
-                )}
+                <span className="flex items-center gap-1.5">
+                  {f.type === "gelato" && (
+                    <span className="rounded-full bg-milano-soft px-2 py-0.5 text-xs font-semibold text-milano">
+                      🍦 Jäätis
+                    </span>
+                  )}
+                  {f.price && (
+                    <span className="text-sm font-semibold text-olive">
+                      {f.price}
+                    </span>
+                  )}
+                </span>
               </div>
               <h4 className="mt-2.5 font-display text-lg font-semibold leading-snug text-ink">
                 <a

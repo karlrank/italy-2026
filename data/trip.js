@@ -62,6 +62,12 @@ export const food = [
   { id: "f15", name: "Corte Visconti", area: "Somma Lombardo", accent: "milano", note: "Pereomanduses, värske pizza — lennujaama lähedal.", price: "€€", hours: "" },
   { id: "f16", name: "Trattoria Cacciatori", area: "Somma Lombardo", accent: "milano", note: "Traditsiooniline Itaalia köök.", price: "€€", hours: "" },
   { id: "f17", name: "Osteria della Pista", area: "Somma Lombardo", accent: "milano", note: "Lastesõbralik, sobib gruppidele.", price: "€€", hours: "" },
+  // Jäätis / gelato 🍦
+  { id: "g1", name: "La Marianna", area: "Città Alta, Bergamo", accent: "bergamo", type: "gelato", note: "Stracciatella sünnikoht (1961), terrass linnavaatega.", price: "€", hours: "" },
+  { id: "g2", name: "Gelateria La Gatta", area: "Sarnico", accent: "iseo", type: "gelato", note: "Pere jäätisekoht 1950ndatest järve ääres; gluteeni-/laktoosivaba.", price: "€", hours: "" },
+  { id: "g3", name: "La Cremeria di Lazise", area: "Lazise", accent: "garda", type: "gelato", note: "Käsitööjäätis ja saiakesed järvepromenaadil.", price: "€", hours: "" },
+  { id: "g4", name: "Amor di Gelato", area: "Salò", accent: "garda", type: "gelato", note: "Käsitööjäätis, granita, vegan/gluteenivabad valikud.", price: "€", hours: "" },
+  { id: "g5", name: "La Gelateria del Castello", area: "Somma Lombardo", accent: "milano", type: "gelato", note: "Lossi vastas, odav — mugav Malpensa teel.", price: "€", hours: "" },
 ];
 
 // ─────────────────────────────────────────────────────────────
