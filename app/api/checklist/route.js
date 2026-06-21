@@ -62,9 +62,15 @@ export async function POST(request) {
   if (!key) return Response.json({ error: "bad key" }, { status: 400 });
   if (!configured) return Response.json({ configured: false });
 
+  const record = {
+    checked: body?.data?.checked ?? {},
+    extras: body?.data?.extras ?? [],
+    updatedAt: Date.now(),
+  };
+
   try {
-    await redis(["SET", key, JSON.stringify(body.data ?? {})]);
-    return Response.json({ configured: true, ok: true });
+    await redis(["SET", key, JSON.stringify(record)]);
+    return Response.json({ configured: true, ok: true, updatedAt: record.updatedAt });
   } catch (e) {
     return Response.json(
       { configured: true, error: "write failed" },

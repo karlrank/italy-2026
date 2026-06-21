@@ -31,16 +31,41 @@ Nimekiri töötab **kohe**, ilma seadistuseta: linnukesed salvestatakse brauseri
 (`localStorage`, seadmepõhine).
 
 Kui soovid, et nimekiri **sünkroniseeruks mõlema pere ja kõigi seadmete vahel**,
-ühenda Vercelis KV-andmebaas:
+ühenda Vercelis KV-andmebaas. Kood on juba valmis — andmebaasi ühendamisel
+hakkab sünk **automaatselt** tööle (sh elav uuendus: leht küsib serverilt
+muudatusi fookusel ja iga 15 sekundi tagant, kirjutamata üle sinu parajasti
+tehtud linnukesi).
+
+**Variant A — Vercel dashboard (lihtsaim):**
 
 1. Vercel projekt → **Storage** → **Create Database** → **Upstash for Redis** (KV).
-2. Ühenda see projektiga — Vercel lisab automaatselt keskkonnamuutujad
-   (`KV_REST_API_URL` ja `KV_REST_API_TOKEN`, või Upstashi vasted).
-3. Tee uus deploy. Nimekirja juures muutub silt „▢ Selles seadmes“ →
-   „☁ Sünkroonitud“.
+2. **Connect Project** → vali see projekt. Vercel lisab automaatselt
+   keskkonnamuutujad (`KV_REST_API_URL` + `KV_REST_API_TOKEN`, või Upstashi
+   vasted `UPSTASH_REDIS_REST_*`).
+3. **Redeploy** (Deployments → ⋯ → Redeploy). Pakkimisnimekirja juures muutub
+   silt „▢ Selles seadmes“ → „☁ Sünkroonitud“.
+
+**Variant B — Vercel CLI:**
+
+```bash
+npm i -g vercel
+vercel link            # seo kaust Vercel projektiga
+vercel storage create  # loo KV / Upstash Redis ja ühenda projektiga
+vercel env pull .env.local   # tõmba muutujad lokaalseks arenduseks
+vercel --prod          # uus deploy
+```
+
+**Kuidas kontrollida, et töötab:**
+
+```bash
+curl "https://SINU-DOMEEN.vercel.app/api/checklist?key=packing:italy-2026"
+# Ootus pärast ühendamist: {"configured":true, ...}
+# Ilma andmebaasita:       {"configured":false,"data":null}
+```
 
 Ilma nende muutujateta vastab API `{"configured": false}` ja klient kasutab
-turvaliselt `localStorage`'i — midagi ei katki.
+turvaliselt `localStorage`'i — midagi ei katki. Toetatud muutujanimed on
+kirjas failis [`.env.example`](.env.example).
 
 Kogu reisi sisu elab ühes failis: [`data/trip.js`](data/trip.js). Andmete
 muutmiseks redigeeri seda faili.

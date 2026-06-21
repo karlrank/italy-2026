@@ -6,34 +6,44 @@ import { Icon } from "@/components/Icons";
 
 const KEY = "packing:italy-2026";
 const LS = "italy2026-packing";
+const POLL_MS = 15000; // jagatud režiimis kontrolli uuendusi iga 15 s
+const EDIT_GRACE_MS = 2500; // ära kirjuta üle värsket kohalikku muudatust
 
 // Vaikeesemed stabiilsete id-dega
 const defaultItems = packingCategories.flatMap((c) =>
   c.items.map((label, i) => ({ id: `${c.id}:${i}`, cat: c.id, label }))
 );
 
+const snapOf = (checked, extras) => JSON.stringify({ checked, extras });
+
 export default function Packing() {
   const [checked, setChecked] = useState({});
   const [extras, setExtras] = useState([]);
   const [mode, setMode] = useState("local"); // 'local' | 'shared'
   const [ready, setReady] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState(null);
   const [draft, setDraft] = useState({ label: "", cat: packingCategories[0].id });
-  const saveTimer = useRef(null);
 
-  // Laadimine
+  const saveTimer = useRef(null);
+  const lastLocalWrite = useRef(0);
+  const lastSnapshot = useRef(snapOf({}, []));
+  const skipNextSave = useRef(false);
+  const modeRef = useRef("local");
+
+  const readLocal = () => {
+    try {
+      const raw = localStorage.getItem(LS);
+      if (raw) {
+        const d = JSON.parse(raw);
+        return { checked: d.checked || {}, extras: d.extras || [] };
+      }
+    } catch {}
+    return { checked: {}, extras: [] };
+  };
+
+  // ── Laadimine ──
   useEffect(() => {
     let cancelled = false;
-    const fromLocal = () => {
-      try {
-        const raw = localStorage.getItem(LS);
-        if (raw) {
-          const d = JSON.parse(raw);
-          return { checked: d.checked || {}, extras: d.extras || [] };
-        }
-      } catch {}
-      return { checked: {}, extras: [] };
-    };
-
     (async () => {
       try {
         const res = await fetch(`/api/checklist?key=${encodeURIComponent(KEY)}`, {
@@ -43,36 +53,38 @@ export default function Packing() {
         if (cancelled) return;
         if (json.configured) {
           setMode("shared");
-          if (json.data) {
-            setChecked(json.data.checked || {});
-            setExtras(json.data.extras || []);
-          } else {
-            // server tühi → tõsta localStorage üles, kui midagi on
-            const local = fromLocal();
-            setChecked(local.checked);
-            setExtras(local.extras);
-          }
+          modeRef.current = "shared";
+          const data = json.data || { ...readLocal() };
+          skipNextSave.current = !json.data; // server tühi → tõsta local üles
+          applyData(data, data.updatedAt || null);
         } else {
-          const local = fromLocal();
-          setChecked(local.checked);
-          setExtras(local.extras);
+          const local = readLocal();
+          skipNextSave.current = true;
+          applyData(local, null);
         }
       } catch {
         if (cancelled) return;
-        const local = fromLocal();
-        setChecked(local.checked);
-        setExtras(local.extras);
+        const local = readLocal();
+        skipNextSave.current = true;
+        applyData(local, null);
       } finally {
         if (!cancelled) setReady(true);
       }
     })();
-
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Salvestamine (localStorage kohe + server debounce'iga)
+  const applyData = (data, ts) => {
+    setChecked(data.checked || {});
+    setExtras(data.extras || []);
+    setUpdatedAt(ts);
+    lastSnapshot.current = snapOf(data.checked || {}, data.extras || []);
+  };
+
+  // ── Salvestamine (localStorage kohe + server debounce'iga) ──
   useEffect(() => {
     if (!ready) return;
     const payload = { checked, extras };
@@ -80,17 +92,64 @@ export default function Packing() {
       localStorage.setItem(LS, JSON.stringify(payload));
     } catch {}
 
+    if (skipNextSave.current) {
+      skipNextSave.current = false;
+      lastSnapshot.current = snapOf(checked, extras);
+      return;
+    }
+
+    lastLocalWrite.current = Date.now();
+    lastSnapshot.current = snapOf(checked, extras);
+
     if (mode === "shared") {
       clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => {
-        fetch("/api/checklist", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key: KEY, data: payload }),
-        }).catch(() => {});
+      saveTimer.current = setTimeout(async () => {
+        try {
+          const res = await fetch("/api/checklist", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key: KEY, data: payload }),
+          });
+          const json = await res.json();
+          if (json?.updatedAt) setUpdatedAt(json.updatedAt);
+        } catch {}
       }, 600);
     }
   }, [checked, extras, mode, ready]);
+
+  // ── Elav sünk: küsi serverilt fookusel ja perioodiliselt ──
+  useEffect(() => {
+    if (!ready || mode !== "shared") return;
+
+    const refresh = async () => {
+      if (document.visibilityState === "hidden") return;
+      if (Date.now() - lastLocalWrite.current < EDIT_GRACE_MS) return; // ära katkesta toimetamist
+      try {
+        const res = await fetch(`/api/checklist?key=${encodeURIComponent(KEY)}`, {
+          cache: "no-store",
+        });
+        const json = await res.json();
+        if (!json.configured || !json.data) return;
+        const snap = snapOf(json.data.checked || {}, json.data.extras || []);
+        if (snap === lastSnapshot.current) return; // muutusi pole
+        skipNextSave.current = true;
+        applyData(json.data, json.data.updatedAt || null);
+      } catch {}
+    };
+
+    const id = setInterval(refresh, POLL_MS);
+    const onVis = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, mode]);
 
   const allItems = useMemo(() => [...defaultItems, ...extras], [extras]);
   const total = allItems.length;
@@ -130,6 +189,14 @@ export default function Packing() {
 
   const itemsByCat = (catId) => allItems.filter((it) => it.cat === catId);
 
+  const updatedLabel =
+    mode === "shared" && updatedAt
+      ? new Date(updatedAt).toLocaleTimeString("et-EE", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : null;
+
   return (
     <div>
       {/* Progress + sync badge */}
@@ -155,6 +222,9 @@ export default function Packing() {
               }`}
             >
               {mode === "shared" ? "☁ Sünkroonitud" : "▢ Selles seadmes"}
+              {updatedLabel && (
+                <span className="font-medium text-olive/70">· {updatedLabel}</span>
+              )}
             </span>
             <button
               onClick={reset}
