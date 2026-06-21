@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { itinerary, dayFocus } from "@/data/trip";
 import { accentFor } from "@/components/accents";
 import { Icon } from "@/components/Icons";
 
-export default function Itinerary() {
+export default function Itinerary({ days, dayFocus }) {
   const [active, setActive] = useState(0);
-  const day = itinerary[active];
+  const day = days[active];
   const a = accentFor(day.accent);
 
   const focusOnMap = () => {
@@ -25,7 +24,7 @@ export default function Itinerary() {
     <div>
       {/* Day rail */}
       <div className="no-scrollbar -mx-5 mb-8 flex gap-2.5 overflow-x-auto px-5 pb-2 md:mx-0 md:flex-wrap md:justify-center md:px-0">
-        {itinerary.map((d, i) => {
+        {days.map((d, i) => {
           const da = accentFor(d.accent);
           const isActive = i === active;
           return (
@@ -135,11 +134,11 @@ export default function Itinerary() {
           Eelmine
         </button>
         <span className="text-xs font-medium text-ink/45">
-          {active + 1} / {itinerary.length}
+          {active + 1} / {days.length}
         </span>
         <button
-          onClick={() => setActive((v) => Math.min(itinerary.length - 1, v + 1))}
-          disabled={active === itinerary.length - 1}
+          onClick={() => setActive((v) => Math.min(days.length - 1, v + 1))}
+          disabled={active === days.length - 1}
           className="flex items-center gap-2 rounded-full border border-ink/15 px-4 py-2 text-sm font-medium text-ink/70 transition hover:bg-ink/5 disabled:opacity-30"
         >
           Järgmine

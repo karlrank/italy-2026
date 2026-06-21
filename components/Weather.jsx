@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { climate } from "@/data/trip";
 import { accentFor } from "@/components/accents";
 
 // WMO ilmakood → emoji
@@ -18,7 +17,7 @@ function codeEmoji(code) {
   return "";
 }
 
-export default function Weather() {
+export default function Weather({ climate }) {
   const [live, setLive] = useState({});
 
   useEffect(() => {

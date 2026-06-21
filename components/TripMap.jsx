@@ -2,10 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
-import { mapStops, routePath } from "@/data/trip";
 import { accents, hexFor } from "@/components/accents";
 
-export default function TripMap() {
+export default function TripMap({ stops, route }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -33,7 +32,7 @@ export default function TripMap() {
       ).addTo(map);
 
       // Animated route line (the sleeping journey)
-      L.polyline(routePath, {
+      L.polyline(route, {
         className: "route-flow",
         color: "#d97642",
         weight: 4,
@@ -42,7 +41,7 @@ export default function TripMap() {
 
       // Markers
       const markersByName = {};
-      mapStops.forEach((s) => {
+      stops.forEach((s) => {
         const color = hexFor(s.region);
         const isStay = s.type === "stay";
         const isAirport = s.type === "airport";
@@ -67,7 +66,7 @@ export default function TripMap() {
         markersByName[s.name] = { marker, lat: s.lat, lng: s.lng };
       });
 
-      const bounds = L.latLngBounds(mapStops.map((s) => [s.lat, s.lng]));
+      const bounds = L.latLngBounds(stops.map((s) => [s.lat, s.lng]));
       map.fitBounds(bounds, { padding: [45, 45] });
 
       // Ajakavast tulev "Vaata kaardil" sündmus

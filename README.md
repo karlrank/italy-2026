@@ -15,6 +15,7 @@ Leht sisaldab:
 - 🧳 **Pakkimisnimekiri** — jagatud, salvestuv nimekiri (vt allpool)
 - 💶 **Eelarve** — piletite kogusumma + näpunäited online-säästuks
 - ℹ️ **Praktiline info** — rendiauto, esmaspäeva-hoiatus jms
+- 🔒 **Paroolikaitse** — valikuline, oma sisselogimislehega (vt allpool)
 
 ## Tehnoloogia
 
@@ -24,6 +25,33 @@ Leht sisaldab:
 - [Open-Meteo](https://open-meteo.com/) ilmateade (võtmeta, kliendipoolne)
 - Fraunces + Inter (Google Fonts)
 - Fotod: [Wikimedia Commons](https://commons.wikimedia.org/) (vabad litsentsid, viited jaluses)
+
+## Paroolikaitse
+
+Kogu saidi saab panna ühe jagatud parooli taha — **lehed, reisiandmed ja API**.
+Aktiveerimiseks lisa Vercelis (Settings → Environment Variables) muutuja:
+
+```
+SITE_PASSWORD = sinu-salajane-parool
+```
+
+Tee uus deploy. Pärast seda:
+
+- Iga külastaja näeb kõigepealt **ilusat sisselogimislehte** (`/login`), mitte
+  brauseri halli dialoogi.
+- Õige parooli järel pannakse `httpOnly`-küpsis (parooli HMAC-allkiri — parool
+  ise küpsisesse ei satu) ja edasi sirvib leht tavapäraselt.
+- Jaluses on „Logi välja“ nupp.
+
+**Miks see on päriselt turvaline (mitte ainult peidetud):**
+
+- Kaitse toimub serveris (`middleware.js`) **enne** vastuse saatmist — nii lehed
+  kui `/api/*` annavad ilma küpsiseta `401` / suunavad sisselogimisele.
+- Reisiandmed renderdatakse **ainult** kaitstud `/` vastusesse ega satu üldse
+  avalikesse JS-pakkidesse (komponendid saavad andmed propsidena serverist).
+  Seda saab kontrollida: `grep -r "Perekond Murd" .next/static` → tühi.
+
+Ilma `SITE_PASSWORD`-muutujata on sait avatud (mugav arenduseks).
 
 ## Pakkimisnimekiri — jagatud salvestus
 

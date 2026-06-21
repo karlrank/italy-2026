@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { packingCategories } from "@/data/trip";
 import { Icon } from "@/components/Icons";
 
 const KEY = "packing:italy-2026";
@@ -9,20 +8,24 @@ const LS = "italy2026-packing";
 const POLL_MS = 15000; // jagatud režiimis kontrolli uuendusi iga 15 s
 const EDIT_GRACE_MS = 2500; // ära kirjuta üle värsket kohalikku muudatust
 
-// Vaikeesemed stabiilsete id-dega
-const defaultItems = packingCategories.flatMap((c) =>
-  c.items.map((label, i) => ({ id: `${c.id}:${i}`, cat: c.id, label }))
-);
-
 const snapOf = (checked, extras) => JSON.stringify({ checked, extras });
 
-export default function Packing() {
+export default function Packing({ categories }) {
+  // Vaikeesemed stabiilsete id-dega
+  const defaultItems = useMemo(
+    () =>
+      categories.flatMap((c) =>
+        c.items.map((label, i) => ({ id: `${c.id}:${i}`, cat: c.id, label }))
+      ),
+    [categories]
+  );
+
   const [checked, setChecked] = useState({});
   const [extras, setExtras] = useState([]);
   const [mode, setMode] = useState("local"); // 'local' | 'shared'
   const [ready, setReady] = useState(false);
   const [updatedAt, setUpdatedAt] = useState(null);
-  const [draft, setDraft] = useState({ label: "", cat: packingCategories[0].id });
+  const [draft, setDraft] = useState({ label: "", cat: categories[0].id });
 
   const saveTimer = useRef(null);
   const lastLocalWrite = useRef(0);
@@ -151,7 +154,7 @@ export default function Packing() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, mode]);
 
-  const allItems = useMemo(() => [...defaultItems, ...extras], [extras]);
+  const allItems = useMemo(() => [...defaultItems, ...extras], [defaultItems, extras]);
   const total = allItems.length;
   const done = allItems.filter((it) => checked[it.id]).length;
   const pct = total ? Math.round((done / total) * 100) : 0;
@@ -258,7 +261,7 @@ export default function Packing() {
           onChange={(e) => setDraft((d) => ({ ...d, cat: e.target.value }))}
           className="rounded-xl border border-ink/10 bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-iseo"
         >
-          {packingCategories.map((c) => (
+          {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.title}
             </option>
@@ -274,7 +277,7 @@ export default function Packing() {
 
       {/* Kategooriad */}
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {packingCategories.map((cat) => {
+        {categories.map((cat) => {
           const items = itemsByCat(cat.id);
           const catDone = items.filter((it) => checked[it.id]).length;
           return (

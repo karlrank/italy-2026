@@ -1,24 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { activityRegions } from "@/data/trip";
 import { accentFor } from "@/components/accents";
 import { Icon } from "@/components/Icons";
 
-export default function Activities() {
+export default function Activities({ regions }) {
   const [filter, setFilter] = useState("all");
 
   const shown = useMemo(
     () =>
-      filter === "all"
-        ? activityRegions
-        : activityRegions.filter((r) => r.accent === filter),
-    [filter]
+      filter === "all" ? regions : regions.filter((r) => r.accent === filter),
+    [filter, regions]
   );
 
   const pills = [
     { key: "all", label: "Kõik" },
-    ...activityRegions.map((r) => ({ key: r.accent, label: r.region })),
+    ...regions.map((r) => ({ key: r.accent, label: r.region })),
   ];
 
   return (

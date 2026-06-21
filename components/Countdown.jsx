@@ -1,10 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { trip } from "@/data/trip";
-
-const start = new Date(trip.startISO).getTime();
-const end = new Date(trip.endISO).getTime();
 
 function diffParts(ms) {
   const total = Math.max(0, ms);
@@ -15,7 +11,9 @@ function diffParts(ms) {
   return { days, hours, minutes, seconds };
 }
 
-export default function Countdown() {
+export default function Countdown({ startISO, endISO, dateRange }) {
+  const start = new Date(startISO).getTime();
+  const end = new Date(endISO).getTime();
   const [now, setNow] = useState(null);
 
   useEffect(() => {
@@ -77,7 +75,7 @@ export default function Countdown() {
           </div>
         ) : (
           <span className="rounded-full bg-sun px-5 py-2.5 font-display text-lg font-semibold text-ink">
-            {trip.dateRange}
+            {dateRange}
           </span>
         )}
       </div>

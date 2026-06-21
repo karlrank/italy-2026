@@ -10,6 +10,13 @@ import {
   practicalNotes,
   photos,
   stayPhotoKey,
+  itinerary,
+  dayFocus,
+  activityRegions,
+  climate,
+  mapStops,
+  routePath,
+  packingCategories,
 } from "@/data/trip";
 import { accentFor } from "@/components/accents";
 import { Icon } from "@/components/Icons";
@@ -22,6 +29,9 @@ import TripMap from "@/components/TripMap";
 import Weather from "@/components/Weather";
 import Packing from "@/components/Packing";
 import Photo from "@/components/Photo";
+import LogoutButton from "@/components/LogoutButton";
+
+const isProtected = Boolean(process.env.SITE_PASSWORD);
 
 const stayTotalPerFamily = stays.reduce((s, x) => s + x.pricePerFamily, 0);
 const eur = (n) =>
@@ -159,7 +169,7 @@ export default function Page() {
       {/* ───────────────── COUNTDOWN ───────────────── */}
       <section className="mx-auto mt-12 max-w-6xl px-5">
         <Reveal>
-          <Countdown />
+          <Countdown startISO={trip.startISO} endISO={trip.endISO} dateRange={trip.dateRange} />
         </Reveal>
       </section>
 
@@ -171,10 +181,10 @@ export default function Page() {
           sub="Kogu teekond ühel pilgul — ööbimised, peatused ja vaatamisväärsused. Klõpsa märgil, et näha rohkem."
         />
         <Reveal>
-          <TripMap />
+          <TripMap stops={mapStops} route={routePath} />
         </Reveal>
         <Reveal className="mt-6">
-          <Weather />
+          <Weather climate={climate} />
         </Reveal>
       </section>
 
@@ -186,7 +196,7 @@ export default function Page() {
           sub="Kaheksa päeva, neli peatust. Vali päev ja vaata, mis plaanis."
         />
         <Reveal>
-          <Itinerary />
+          <Itinerary days={itinerary} dayFocus={dayFocus} />
         </Reveal>
       </section>
 
@@ -285,7 +295,7 @@ export default function Page() {
           sub="Loomaaiad, lossid, praamid ja dinosaurused — lastesõbralik valik piirkonna kaupa."
         />
         <Reveal>
-          <Activities />
+          <Activities regions={activityRegions} />
         </Reveal>
       </section>
 
@@ -298,7 +308,7 @@ export default function Page() {
             sub="Jagatud nimekiri mõlemale perele. Linnuke salvestub — ühenda Vercel KV ja see sünkroonib kõigi seadmete vahel."
           />
           <Reveal>
-            <Packing />
+            <Packing categories={packingCategories} />
           </Reveal>
         </div>
       </section>
@@ -473,6 +483,11 @@ export default function Page() {
             <p className="mt-2 text-[0.7rem] text-cream/35">
               Kaart © OpenStreetMap & CARTO · ilmaandmed Open-Meteo
             </p>
+            {isProtected && (
+              <div className="mt-5">
+                <LogoutButton />
+              </div>
+            )}
           </div>
         </div>
       </footer>
