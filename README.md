@@ -56,8 +56,14 @@ Ilma `SITE_PASSWORD`-muutujata on sait avatud (mugav arenduseks).
 
 ## Sisuhaldus (CMS)
 
-Enamikku sisust saab muuta otse veebis, ilma koodi puutumata, lehel **`/admin`**
-(link on jaluses „Halda sisu“, nähtav sisseloginuna).
+Sisu saab muuta **kahel viisil** (mõlemad nõuavad sisselogimist + ühendatud KV-d):
+
+1. **Otse avalehel** — vajuta paremas alanurgas **„✎ Muuda sisu“**, misjärel
+   ilmuvad sektsioonide kõrvale väikesed pliiatsinupud (✎). Klõps avab dialoogi
+   selle sektsiooni muutmiseks. Pakkimissektsioonis saab esemeid lisada otse iga
+   kategooria all ja luua uusi kategooriaid.
+2. **Haldusleht `/admin`** — kõik sektsioonid ühel lehel (link jaluses
+   „Halda sisu“).
 
 Redigeerida saab: reisi pealkiri/kuupäevad/pered, kiirfaktid, **ajakava**
 (päevad + tegevused), **majutus**, **tegevused**, **eelarve**, **kaardi

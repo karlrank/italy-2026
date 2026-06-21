@@ -32,9 +32,9 @@ export async function POST(request) {
     return Response.json({ ok: false }, { status: 400 });
   }
 
-  const { action, catId, itemId, label } = body || {};
+  const { action, catId, itemId, label, icon } = body || {};
   const content = await getContent();
-  const cats = (content.packingCategories || []).map((c) => ({
+  let cats = (content.packingCategories || []).map((c) => ({
     ...c,
     items: [...(c.items || [])],
   }));
@@ -48,6 +48,17 @@ export async function POST(request) {
   } else if (action === "remove") {
     if (!cat) return Response.json({ ok: false }, { status: 400 });
     cat.items = cat.items.filter((it) => it.id !== itemId);
+  } else if (action === "addCategory") {
+    if (!label?.trim()) return Response.json({ ok: false }, { status: 400 });
+    cats.push({
+      id: "cat" + rid(),
+      title: label.trim(),
+      icon: icon || "pin",
+      items: [],
+    });
+  } else if (action === "removeCategory") {
+    if (!cat) return Response.json({ ok: false }, { status: 400 });
+    cats = cats.filter((c) => c.id !== catId);
   } else {
     return Response.json({ ok: false, error: "bad action" }, { status: 400 });
   }

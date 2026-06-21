@@ -14,10 +14,8 @@ export default function Packing({ categories }) {
   const [mode, setMode] = useState("local"); // 'local' | 'shared'
   const [ready, setReady] = useState(false);
   const [updatedAt, setUpdatedAt] = useState(null);
-  const [draft, setDraft] = useState({
-    label: "",
-    cat: categories?.[0]?.id || "",
-  });
+  const [itemDrafts, setItemDrafts] = useState({}); // {catId: text}
+  const [newCat, setNewCat] = useState("");
   const [busy, setBusy] = useState(false);
 
   const saveTimer = useRef(null);
@@ -38,7 +36,6 @@ export default function Packing({ categories }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // linnukesed
       try {
         const res = await fetch(
           `/api/checklist?key=${encodeURIComponent(CHECK_KEY)}`,
@@ -62,7 +59,6 @@ export default function Packing({ categories }) {
         setChecked(c);
         lastSnap.current = JSON.stringify(c);
       }
-      // värsked kategooriad CMS-ist
       try {
         const res = await fetch("/api/packing", { cache: "no-store" });
         const json = await res.json();
@@ -82,7 +78,6 @@ export default function Packing({ categories }) {
       localStorage.setItem(LS, JSON.stringify({ checked }));
     } catch {}
     if (mode !== "shared") return;
-
     lastLocalWrite.current = Date.now();
     lastSnap.current = JSON.stringify(checked);
     clearTimeout(saveTimer.current);
@@ -99,18 +94,16 @@ export default function Packing({ categories }) {
     }, 600);
   }, [checked, mode, ready]);
 
-  // ── Elav sünk (jagatud režiim) ──
+  // ── Elav sünk ──
   useEffect(() => {
     if (!ready || mode !== "shared") return;
     const refresh = async () => {
       if (document.visibilityState === "hidden") return;
-      // kategooriad
       try {
         const r = await fetch("/api/packing", { cache: "no-store" });
         const j = await r.json();
         if (Array.isArray(j.categories)) setCats(j.categories);
       } catch {}
-      // linnukesed (ära katkesta värsket toimetamist)
       if (Date.now() - lastLocalWrite.current < EDIT_GRACE_MS) return;
       try {
         const r = await fetch(
@@ -150,21 +143,24 @@ export default function Packing({ categories }) {
       return next;
     });
 
-  const addItem = async (e) => {
-    e.preventDefault();
-    const label = draft.label.trim();
-    if (!label || !draft.cat || !editable || busy) return;
+  const post = async (payload) => {
+    const res = await fetch("/api/packing", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  };
+
+  const addItem = async (catId) => {
+    const label = (itemDrafts[catId] || "").trim();
+    if (!label || !editable || busy) return;
     setBusy(true);
     try {
-      const res = await fetch("/api/packing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "add", catId: draft.cat, label }),
-      });
-      const json = await res.json();
+      const json = await post({ action: "add", catId, label });
       if (json.ok && Array.isArray(json.categories)) {
         setCats(json.categories);
-        setDraft((d) => ({ ...d, label: "" }));
+        setItemDrafts((d) => ({ ...d, [catId]: "" }));
       }
     } catch {}
     setBusy(false);
@@ -174,12 +170,7 @@ export default function Packing({ categories }) {
     if (!editable || busy) return;
     setBusy(true);
     try {
-      const res = await fetch("/api/packing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "remove", catId, itemId }),
-      });
-      const json = await res.json();
+      const json = await post({ action: "remove", catId, itemId });
       if (json.ok && Array.isArray(json.categories)) {
         setCats(json.categories);
         setChecked((c) => {
@@ -188,6 +179,32 @@ export default function Packing({ categories }) {
           return next;
         });
       }
+    } catch {}
+    setBusy(false);
+  };
+
+  const addCategory = async (e) => {
+    e.preventDefault();
+    const label = newCat.trim();
+    if (!label || !editable || busy) return;
+    setBusy(true);
+    try {
+      const json = await post({ action: "addCategory", label });
+      if (json.ok && Array.isArray(json.categories)) {
+        setCats(json.categories);
+        setNewCat("");
+      }
+    } catch {}
+    setBusy(false);
+  };
+
+  const removeCategory = async (catId) => {
+    if (!editable || busy) return;
+    if (!confirm("Kustuta kogu kategooria koos esemetega?")) return;
+    setBusy(true);
+    try {
+      const json = await post({ action: "removeCategory", catId });
+      if (json.ok && Array.isArray(json.categories)) setCats(json.categories);
     } catch {}
     setBusy(false);
   };
@@ -218,9 +235,7 @@ export default function Packing({ categories }) {
                 : "Linnukesed salvestatakse sinu seadmesse. Ühenda Vercel KV, et nimekirja jagada ja muuta."
             }
             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
-              mode === "shared"
-                ? "bg-olive/15 text-olive"
-                : "bg-ink/8 text-ink/60"
+              mode === "shared" ? "bg-olive/15 text-olive" : "bg-ink/8 text-ink/60"
             }`}
           >
             {mode === "shared" ? "☁ Sünkroonitud" : "▢ Selles seadmes"}
@@ -235,48 +250,16 @@ export default function Packing({ categories }) {
             style={{ width: `${pct}%` }}
           />
         </div>
+        {!editable && (
+          <p className="mt-3 text-xs text-ink/45">
+            Esemete ja kategooriate lisamiseks ühenda Vercel KV (vt README).
+            Linnukesed töötavad ka praegu.
+          </p>
+        )}
       </div>
 
-      {/* Lisa oma ese — ainult jagatud (CMS) režiimis */}
-      {editable ? (
-        <form
-          onSubmit={addItem}
-          className="mb-8 flex flex-col gap-2.5 rounded-2xl border border-dashed border-ink/20 bg-cream/40 p-3 sm:flex-row"
-        >
-          <input
-            value={draft.label}
-            onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
-            placeholder="Lisa oma ese…"
-            className="flex-1 rounded-xl border border-ink/10 bg-white px-4 py-2.5 text-sm text-ink outline-none focus:border-iseo"
-          />
-          <select
-            value={draft.cat}
-            onChange={(e) => setDraft((d) => ({ ...d, cat: e.target.value }))}
-            className="rounded-xl border border-ink/10 bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-iseo"
-          >
-            {cats.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.title}
-              </option>
-            ))}
-          </select>
-          <button
-            type="submit"
-            disabled={busy}
-            className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-cream transition hover:opacity-90 disabled:opacity-40"
-          >
-            Lisa
-          </button>
-        </form>
-      ) : (
-        <p className="mb-8 rounded-2xl border border-dashed border-ink/15 bg-cream/40 p-3 text-center text-xs text-ink/50">
-          Esemete lisamiseks ja muutmiseks ühenda Vercel KV (vt README). Linnukesed
-          töötavad ka praegu.
-        </p>
-      )}
-
       {/* Kategooriad */}
-      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid items-start gap-5 md:grid-cols-2 lg:grid-cols-3">
         {cats.map((cat) => {
           const items = cat.items || [];
           const catDone = items.filter((it) => checked[it.id]).length;
@@ -295,7 +278,18 @@ export default function Packing({ categories }) {
                 <span className="text-xs font-medium text-ink/40">
                   {catDone}/{items.length}
                 </span>
+                {editable && (
+                  <button
+                    onClick={() => removeCategory(cat.id)}
+                    className="rounded-md px-1.5 py-1 text-xs text-ink/30 transition hover:text-bergamo"
+                    title="Kustuta kategooria"
+                    aria-label="Kustuta kategooria"
+                  >
+                    🗑
+                  </button>
+                )}
               </div>
+
               <ul className="space-y-1">
                 {items.map((it) => {
                   const isChecked = !!checked[it.id];
@@ -336,9 +330,61 @@ export default function Packing({ categories }) {
                   );
                 })}
               </ul>
+
+              {/* Per-category add */}
+              {editable && (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    addItem(cat.id);
+                  }}
+                  className="mt-3 flex gap-2 border-t border-ink/8 pt-3"
+                >
+                  <input
+                    value={itemDrafts[cat.id] || ""}
+                    onChange={(e) =>
+                      setItemDrafts((d) => ({ ...d, [cat.id]: e.target.value }))
+                    }
+                    placeholder="+ Lisa ese…"
+                    className="flex-1 rounded-lg border border-ink/10 bg-cream/40 px-3 py-1.5 text-sm text-ink outline-none focus:border-iseo focus:bg-white"
+                  />
+                  <button
+                    type="submit"
+                    disabled={busy || !(itemDrafts[cat.id] || "").trim()}
+                    className="shrink-0 rounded-lg bg-ink px-3 py-1.5 text-sm font-semibold text-cream transition hover:opacity-90 disabled:opacity-30"
+                  >
+                    Lisa
+                  </button>
+                </form>
+              )}
             </div>
           );
         })}
+
+        {/* Add category */}
+        {editable && (
+          <form
+            onSubmit={addCategory}
+            className="flex flex-col justify-center gap-2.5 rounded-3xl border border-dashed border-ink/25 bg-cream/30 p-5"
+          >
+            <span className="text-sm font-semibold text-ink/60">
+              Uus kategooria
+            </span>
+            <input
+              value={newCat}
+              onChange={(e) => setNewCat(e.target.value)}
+              placeholder="nt Matkavarustus"
+              className="rounded-lg border border-ink/10 bg-white px-3 py-2 text-sm text-ink outline-none focus:border-iseo"
+            />
+            <button
+              type="submit"
+              disabled={busy || !newCat.trim()}
+              className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-cream transition hover:opacity-90 disabled:opacity-30"
+            >
+              + Lisa kategooria
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,9 @@
-import { getContent } from "@/lib/content";
+import { getContent, contentConfigured } from "@/lib/content";
 import { accentFor } from "@/components/accents";
 import { Icon } from "@/components/Icons";
 import Reveal from "@/components/Reveal";
 import Nav from "@/components/Nav";
+import { EditProvider, EditButton } from "@/components/EditMode";
 import Itinerary from "@/components/Itinerary";
 import Activities from "@/components/Activities";
 import Countdown from "@/components/Countdown";
@@ -22,7 +23,7 @@ const eur = (n) =>
     maximumFractionDigits: 2,
   }) + " €";
 
-function SectionHeading({ kicker, title, sub }) {
+function SectionHeading({ kicker, title, sub, editKey }) {
   return (
     <Reveal className="mx-auto mb-12 max-w-2xl text-center">
       <span className="text-xs font-semibold uppercase tracking-[0.2em] text-bergamo">
@@ -30,6 +31,11 @@ function SectionHeading({ kicker, title, sub }) {
       </span>
       <h2 className="mt-3 font-display text-4xl font-semibold leading-tight text-ink md:text-5xl">
         {title}
+        {editKey && (
+          <span className="ml-2 inline-block align-middle">
+            <EditButton section={editKey} />
+          </span>
+        )}
       </h2>
       {sub && <p className="mt-4 text-ink/65 md:text-lg">{sub}</p>}
     </Reveal>
@@ -62,6 +68,7 @@ export default async function Page() {
   );
 
   return (
+    <EditProvider canEdit={contentConfigured}>
     <main id="top" className="bg-grain">
       <Nav />
 
@@ -82,6 +89,10 @@ export default async function Page() {
         {/* lake blobs */}
         <div className="float-slow absolute -left-16 top-1/3 h-64 w-64 rounded-full bg-iseo opacity-15 blur-3xl" />
         <div className="float-slower absolute bottom-10 right-1/4 h-72 w-72 rounded-full bg-garda opacity-15 blur-3xl" />
+
+        <div className="absolute right-4 top-20 z-20">
+          <EditButton section="trip" label="Muuda reisi infot" />
+        </div>
 
         <div className="relative mx-auto w-full max-w-5xl px-5 pt-24 text-center">
           <Reveal>
@@ -151,6 +162,9 @@ export default async function Page() {
 
       {/* ───────────────── QUICK FACTS ───────────────── */}
       <section className="relative z-10 mx-auto -mt-6 max-w-6xl px-5">
+        <div className="absolute -top-3 right-7 z-20">
+          <EditButton section="quickFacts" label="Muuda kiirfakte" />
+        </div>
         <div className="grid gap-3 rounded-3xl border border-ink/10 bg-white/80 p-3 shadow-[0_24px_60px_-40px_rgba(42,33,24,0.5)] backdrop-blur sm:grid-cols-2 lg:grid-cols-4">
           {quickFacts.map((f, i) => (
             <Reveal
@@ -186,12 +200,16 @@ export default async function Page() {
         <SectionHeading
           kicker="Marsruut"
           title="Reisi kaart"
+          editKey="mapStops"
           sub="Kogu teekond ühel pilgul — ööbimised, peatused ja vaatamisväärsused. Klõpsa märgil, et näha rohkem."
         />
         <Reveal>
           <TripMap stops={mapStops} route={routePath} />
         </Reveal>
-        <Reveal className="mt-6">
+        <Reveal className="relative mt-6">
+          <div className="absolute right-4 top-4 z-20">
+            <EditButton section="climate" label="Muuda ilma" />
+          </div>
           <Weather climate={climate} />
         </Reveal>
       </section>
@@ -201,6 +219,7 @@ export default async function Page() {
         <SectionHeading
           kicker="Päev päevalt"
           title="Ajakava"
+          editKey="itinerary"
           sub="Kaheksa päeva, neli peatust. Vali päev ja vaata, mis plaanis."
         />
         <Reveal>
@@ -214,6 +233,7 @@ export default async function Page() {
           <SectionHeading
             kicker="Kus magame"
             title="Majutus"
+            editKey="stays"
             sub="Neli peatust. Hinnad on ühe pere kohta."
           />
           <div className="grid gap-5 md:grid-cols-2">
@@ -300,6 +320,7 @@ export default async function Page() {
         <SectionHeading
           kicker="Mida teha"
           title="Tegevused"
+          editKey="activityRegions"
           sub="Loomaaiad, lossid, praamid ja dinosaurused — lastesõbralik valik piirkonna kaupa."
         />
         <Reveal>
@@ -313,6 +334,7 @@ export default async function Page() {
           <SectionHeading
             kicker="Enne minekut"
             title="Pakkimisnimekiri"
+            editKey="packingCategories"
             sub="Jagatud nimekiri mõlemale perele. Linnuke salvestub — ühenda Vercel KV ja see sünkroonib kõigi seadmete vahel."
           />
           <Reveal>
@@ -327,6 +349,7 @@ export default async function Page() {
           <SectionHeading
             kicker="Raha"
             title="Eelarve"
+            editKey="budget"
             sub="Tegevuste hinnad on kogu seltskonna (mõlema pere) peale."
           />
 
@@ -421,6 +444,7 @@ export default async function Page() {
         <SectionHeading
           kicker="Hea teada"
           title="Praktiline info"
+          editKey="practicalNotes"
           sub="Mõned asjad, mida tasub meeles pidada."
         />
         <div className="grid gap-5 sm:grid-cols-2">
@@ -507,5 +531,6 @@ export default async function Page() {
         </div>
       </footer>
     </main>
+    </EditProvider>
   );
 }
