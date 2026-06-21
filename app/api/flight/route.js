@@ -40,12 +40,37 @@ export async function GET(request) {
       headers: { "X-RapidAPI-Key": KEY, "X-RapidAPI-Host": HOST },
       cache: "no-store",
     });
-    if (!r.ok) {
-      return Response.json({ configured: true, found: false, status: r.status });
+
+    const raw = await r.text();
+    let data = null;
+    try {
+      data = raw ? JSON.parse(raw) : null;
+    } catch {
+      data = null;
     }
-    const data = await r.json();
+
+    if (!r.ok) {
+      const message =
+        (data && (data.message || data.error)) || raw.slice(0, 200) || "";
+      console.error(`[flight] ${number} ${date} → ${r.status}: ${message}`);
+      return Response.json({
+        configured: true,
+        found: false,
+        upstreamStatus: r.status,
+        message,
+      });
+    }
+
     const leg = Array.isArray(data) ? data[0] : data?.flights?.[0] || null;
-    if (!leg) return Response.json({ configured: true, found: false });
+    if (!leg) {
+      console.error(`[flight] ${number} ${date} → 200 but no legs`);
+      return Response.json({
+        configured: true,
+        found: false,
+        upstreamStatus: 200,
+        message: "Selle numbri ja kuupäevaga lendu ei leitud.",
+      });
+    }
 
     return Response.json({
       configured: true,
@@ -55,7 +80,8 @@ export async function GET(request) {
       departure: seg(leg.departure),
       arrival: seg(leg.arrival),
     });
-  } catch {
+  } catch (e) {
+    console.error(`[flight] ${number} ${date} → exception: ${e?.message}`);
     return Response.json({ configured: true, found: false, error: "fetch failed" });
   }
 }
