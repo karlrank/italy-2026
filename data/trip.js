@@ -40,28 +40,28 @@ export const flights = [
 // ─────────────────────────────────────────────────────────────
 export const food = [
   // Bergamo
-  { id: "f1", name: "Il Circolino", area: "Città Alta, Bergamo", accent: "bergamo", note: "Pizza ja värske pasta, suvel mõnus õueala." },
-  { id: "f2", name: "Pizzeria San Vigilio", area: "Città Alta, Bergamo", accent: "bergamo", note: "Pizza ja panoraamvaade köisraudtee tipus." },
-  { id: "f3", name: "Da Franco", area: "Città Alta, Bergamo", accent: "bergamo", note: "Traditsiooniline Lombardia köök, mõistlik hind." },
+  { id: "f1", name: "Il Circolino", area: "Città Alta, Bergamo", accent: "bergamo", note: "Pizza ja värske pasta, suvel mõnus õueala.", price: "€€", hours: "" },
+  { id: "f2", name: "Pizzeria San Vigilio", area: "Città Alta, Bergamo", accent: "bergamo", note: "Pizza ja panoraamvaade köisraudtee tipus.", price: "€€", hours: "" },
+  { id: "f3", name: "Da Franco", area: "Città Alta, Bergamo", accent: "bergamo", note: "Traditsiooniline Lombardia köök, mõistlik hind.", price: "€€", hours: "" },
   // Lake Iseo
-  { id: "f4", name: "Cascina Boneta", area: "Sarnico", accent: "iseo", note: "Pererestoran järvevaatega — pasta, grill, pizza, õuealad." },
-  { id: "f5", name: "La Baia", area: "Sarnico", accent: "iseo", note: "Pizza ja kala järve ääres; gluteeni-/laktoosivabad valikud." },
-  { id: "f6", name: "L'Approdo", area: "Sarnico", accent: "iseo", note: "Restoran-pizzeria otse järve ääres." },
+  { id: "f4", name: "Cascina Boneta", area: "Sarnico", accent: "iseo", note: "Pererestoran järvevaatega — pasta, grill, pizza, õuealad.", price: "€€", hours: "" },
+  { id: "f5", name: "La Baia", area: "Sarnico", accent: "iseo", note: "Pizza ja kala järve ääres; gluteeni-/laktoosivabad valikud.", price: "€€", hours: "" },
+  { id: "f6", name: "L'Approdo", area: "Sarnico", accent: "iseo", note: "Restoran-pizzeria otse järve ääres.", price: "€€", hours: "" },
   // Garda — läänekallas
-  { id: "f7", name: "Ristorante Pisenze", area: "Manerba del Garda", accent: "garda", note: "Mänguala lastele, lähedal majutusele." },
-  { id: "f8", name: "Al Porticciolo", area: "San Felice del Benaco", accent: "garda", note: "Järve ääres, pereomanduses." },
-  { id: "f9", name: "Osteria della Pieve", area: "Manerba del Garda", accent: "garda", note: "Hubane ja peresõbralik." },
+  { id: "f7", name: "Ristorante Pisenze", area: "Manerba del Garda", accent: "garda", note: "Mänguala lastele, lähedal majutusele.", price: "€€", hours: "" },
+  { id: "f8", name: "Al Porticciolo", area: "San Felice del Benaco", accent: "garda", note: "Järve ääres, pereomanduses.", price: "€€", hours: "" },
+  { id: "f9", name: "Osteria della Pieve", area: "Manerba del Garda", accent: "garda", note: "Hubane ja peresõbralik.", price: "€€", hours: "" },
   // Garda — Valeggio (tortellinid)
-  { id: "f10", name: "Alla Borsa", area: "Valeggio sul Mincio", accent: "garda", note: "Kuulus tortellini-restoran." },
-  { id: "f11", name: "Al Re del Tortellino", area: "Valeggio sul Mincio", accent: "garda", note: "Kohalikud käsitsi tehtud tortellinid." },
+  { id: "f10", name: "Alla Borsa", area: "Valeggio sul Mincio", accent: "garda", note: "Kuulus tortellini-restoran.", price: "€€€", hours: "" },
+  { id: "f11", name: "Al Re del Tortellino", area: "Valeggio sul Mincio", accent: "garda", note: "Kohalikud käsitsi tehtud tortellinid.", price: "€€", hours: "" },
   // Garda — Lazise & Sirmione
-  { id: "f12", name: "Agriturismo Le Caldane", area: "Lazise", accent: "garda", note: "Talurestoran, kõrgtoolid ja aiamänguala." },
-  { id: "f13", name: "Pizzeria Bengio", area: "Lazise", accent: "garda", note: "Pizza ja lihatoidud, sõbralik perele." },
-  { id: "f14", name: "Pizzeria Erica", area: "Sirmione", accent: "garda", note: "Pizza/pasta, terrass ja basseinid lastele." },
+  { id: "f12", name: "Agriturismo Le Caldane", area: "Lazise", accent: "garda", note: "Talurestoran, kõrgtoolid ja aiamänguala.", price: "€€", hours: "" },
+  { id: "f13", name: "Pizzeria Bengio", area: "Lazise", accent: "garda", note: "Pizza ja lihatoidud, sõbralik perele.", price: "€", hours: "" },
+  { id: "f14", name: "Pizzeria Erica", area: "Sirmione", accent: "garda", note: "Pizza/pasta, terrass ja basseinid lastele.", price: "€€", hours: "" },
   // Milano / Malpensa (viimane õhtu)
-  { id: "f15", name: "Corte Visconti", area: "Somma Lombardo", accent: "milano", note: "Pereomanduses, värske pizza — lennujaama lähedal." },
-  { id: "f16", name: "Trattoria Cacciatori", area: "Somma Lombardo", accent: "milano", note: "Traditsiooniline Itaalia köök." },
-  { id: "f17", name: "Osteria della Pista", area: "Somma Lombardo", accent: "milano", note: "Lastesõbralik, sobib gruppidele." },
+  { id: "f15", name: "Corte Visconti", area: "Somma Lombardo", accent: "milano", note: "Pereomanduses, värske pizza — lennujaama lähedal.", price: "€€", hours: "" },
+  { id: "f16", name: "Trattoria Cacciatori", area: "Somma Lombardo", accent: "milano", note: "Traditsiooniline Itaalia köök.", price: "€€", hours: "" },
+  { id: "f17", name: "Osteria della Pista", area: "Somma Lombardo", accent: "milano", note: "Lastesõbralik, sobib gruppidele.", price: "€€", hours: "" },
 ];
 
 // ─────────────────────────────────────────────────────────────

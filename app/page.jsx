@@ -251,7 +251,7 @@ export default async function Page() {
           sub="Kaheksa päeva, neli peatust. Vali päev ja vaata, mis plaanis."
         />
         <Reveal>
-          <Itinerary days={itinerary} dayFocus={dayFocus} />
+          <Itinerary days={itinerary} dayFocus={dayFocus} food={food} />
         </Reveal>
       </section>
 

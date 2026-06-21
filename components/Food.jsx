@@ -60,12 +60,17 @@ export default function Food({ food }) {
               <span
                 className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${a.gradient} opacity-70`}
               />
-              <span
-                className={`inline-flex w-fit items-center gap-1.5 rounded-full ${a.bgSoft} ${a.text} px-2.5 py-0.5 text-xs font-semibold`}
-              >
-                <Icon name="pin" className="h-3 w-3" />
-                {f.area}
-              </span>
+              <div className="flex items-center justify-between gap-2">
+                <span
+                  className={`inline-flex w-fit items-center gap-1.5 rounded-full ${a.bgSoft} ${a.text} px-2.5 py-0.5 text-xs font-semibold`}
+                >
+                  <Icon name="pin" className="h-3 w-3" />
+                  {f.area}
+                </span>
+                {f.price && (
+                  <span className="text-sm font-semibold text-olive">{f.price}</span>
+                )}
+              </div>
               <h4 className="mt-2.5 font-display text-lg font-semibold leading-snug text-ink">
                 <a
                   href={f.url || mapsUrl(q)}
@@ -79,16 +84,21 @@ export default function Food({ food }) {
               <p className="mt-1.5 flex-1 text-sm leading-relaxed text-ink/70">
                 {f.note}
               </p>
-              <a
-                href={mapsUrl(q)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 flex w-fit items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-ink/55 transition hover:bg-ink/5 hover:text-ink"
-                title="Ava Google Mapsis"
-              >
-                <Icon name="pin" className="h-3.5 w-3.5" />
-                Kaardil
-              </a>
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <a
+                  href={mapsUrl(q)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-fit items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-ink/55 transition hover:bg-ink/5 hover:text-ink"
+                  title="Ava Google Mapsis"
+                >
+                  <Icon name="pin" className="h-3.5 w-3.5" />
+                  Kaardil
+                </a>
+                {f.hours && (
+                  <span className="text-xs text-ink/50">🕒 {f.hours}</span>
+                )}
+              </div>
             </article>
           );
         })}

@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { accentFor } from "@/components/accents";
 import { Icon } from "@/components/Icons";
 import { linkify } from "@/lib/linkify";
+import { mapsUrl } from "@/lib/links";
 
-export default function Itinerary({ days, dayFocus }) {
+export default function Itinerary({ days, dayFocus, food = [] }) {
   const [active, setActive] = useState(0);
   const [todayIndex, setTodayIndex] = useState(-1);
 
@@ -22,6 +23,7 @@ export default function Itinerary({ days, dayFocus }) {
 
   const day = days[active];
   const a = accentFor(day.accent);
+  const dayFood = food.filter((f) => f.accent === day.accent).slice(0, 3);
 
   const focusOnMap = () => {
     const name = dayFocus[day.day];
@@ -125,6 +127,40 @@ export default function Itinerary({ days, dayFocus }) {
                 Vaata kaardil
                 <Icon name="arrow" className="h-4 w-4" />
               </button>
+            )}
+
+            {dayFood.length > 0 && (
+              <div className="mt-6 rounded-2xl border border-ink/10 bg-cream/50 p-4">
+                <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-ink/50">
+                  🍝 Söögikohad lähedal
+                </p>
+                <ul className="space-y-1.5">
+                  {dayFood.map((f) => (
+                    <li key={f.id}>
+                      <a
+                        href={mapsUrl(`${f.name}, ${f.area}, Italia`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-baseline justify-between gap-2 text-sm"
+                      >
+                        <span className="font-medium text-ink/85 underline-offset-2 group-hover:text-bergamo group-hover:underline">
+                          {f.name}
+                        </span>
+                        <span className="shrink-0 text-xs text-ink/45">
+                          {f.area}
+                          {f.price ? ` · ${f.price}` : ""}
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="#sook"
+                  className={`mt-2 inline-block text-xs font-semibold ${a.text} hover:underline`}
+                >
+                  Kõik söögikohad →
+                </a>
+              </div>
             )}
           </div>
 
