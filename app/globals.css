@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Mediterranean palette */
+  --color-cream: #fbf6ee;
+  --color-ink: #2a2118;
+
+  --color-bergamo: #d97642;   /* terracotta */
+  --color-bergamo-soft: #f6e2d4;
+  --color-iseo: #2f7d8c;      /* lake teal */
+  --color-iseo-soft: #d6ebef;
+  --color-garda: #3a6ea5;     /* deep lake blue */
+  --color-garda-soft: #dbe6f3;
+  --color-milano: #8a5a83;    /* dusk violet */
+  --color-milano-soft: #ecdef0;
+
+  --color-sun: #e8a83a;       /* golden sun */
+  --color-olive: #6b7d4a;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Subtle paper / grain texture for warmth */
+.bg-grain {
+  background-image: radial-gradient(rgba(42, 33, 24, 0.035) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+/* Scroll-reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .float-slow, .float-slower { animation: none !important; }
+}
+
+/* Floating hero blobs */
+@keyframes floaty {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-26px) translateX(10px); }
+}
+.float-slow { animation: floaty 12s ease-in-out infinite; }
+.float-slower { animation: floaty 18s ease-in-out infinite; }
+
+/* Gentle sun pulse */
+@keyframes shimmer {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+.shimmer { animation: shimmer 6s ease-in-out infinite; }
+
+/* Hide scrollbar on the day rail */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
