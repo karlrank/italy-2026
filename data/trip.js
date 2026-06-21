@@ -36,6 +36,35 @@ export const flights = [
 ];
 
 // ─────────────────────────────────────────────────────────────
+// SÖÖGIKOHAD (peresõbralikud, peatuste lähedal). Link → Google Maps.
+// ─────────────────────────────────────────────────────────────
+export const food = [
+  // Bergamo
+  { id: "f1", name: "Il Circolino", area: "Città Alta, Bergamo", accent: "bergamo", note: "Pizza ja värske pasta, suvel mõnus õueala." },
+  { id: "f2", name: "Pizzeria San Vigilio", area: "Città Alta, Bergamo", accent: "bergamo", note: "Pizza ja panoraamvaade köisraudtee tipus." },
+  { id: "f3", name: "Da Franco", area: "Città Alta, Bergamo", accent: "bergamo", note: "Traditsiooniline Lombardia köök, mõistlik hind." },
+  // Lake Iseo
+  { id: "f4", name: "Cascina Boneta", area: "Sarnico", accent: "iseo", note: "Pererestoran järvevaatega — pasta, grill, pizza, õuealad." },
+  { id: "f5", name: "La Baia", area: "Sarnico", accent: "iseo", note: "Pizza ja kala järve ääres; gluteeni-/laktoosivabad valikud." },
+  { id: "f6", name: "L'Approdo", area: "Sarnico", accent: "iseo", note: "Restoran-pizzeria otse järve ääres." },
+  // Garda — läänekallas
+  { id: "f7", name: "Ristorante Pisenze", area: "Manerba del Garda", accent: "garda", note: "Mänguala lastele, lähedal majutusele." },
+  { id: "f8", name: "Al Porticciolo", area: "San Felice del Benaco", accent: "garda", note: "Järve ääres, pereomanduses." },
+  { id: "f9", name: "Osteria della Pieve", area: "Manerba del Garda", accent: "garda", note: "Hubane ja peresõbralik." },
+  // Garda — Valeggio (tortellinid)
+  { id: "f10", name: "Alla Borsa", area: "Valeggio sul Mincio", accent: "garda", note: "Kuulus tortellini-restoran." },
+  { id: "f11", name: "Al Re del Tortellino", area: "Valeggio sul Mincio", accent: "garda", note: "Kohalikud käsitsi tehtud tortellinid." },
+  // Garda — Lazise & Sirmione
+  { id: "f12", name: "Agriturismo Le Caldane", area: "Lazise", accent: "garda", note: "Talurestoran, kõrgtoolid ja aiamänguala." },
+  { id: "f13", name: "Pizzeria Bengio", area: "Lazise", accent: "garda", note: "Pizza ja lihatoidud, sõbralik perele." },
+  { id: "f14", name: "Pizzeria Erica", area: "Sirmione", accent: "garda", note: "Pizza/pasta, terrass ja basseinid lastele." },
+  // Milano / Malpensa (viimane õhtu)
+  { id: "f15", name: "Corte Visconti", area: "Somma Lombardo", accent: "milano", note: "Pereomanduses, värske pizza — lennujaama lähedal." },
+  { id: "f16", name: "Trattoria Cacciatori", area: "Somma Lombardo", accent: "milano", note: "Traditsiooniline Itaalia köök." },
+  { id: "f17", name: "Osteria della Pista", area: "Somma Lombardo", accent: "milano", note: "Lastesõbralik, sobib gruppidele." },
+];
+
+// ─────────────────────────────────────────────────────────────
 // KAART — peatused ja marsruut
 // ─────────────────────────────────────────────────────────────
 // type: "airport" | "stay" | "spot"
@@ -340,6 +369,7 @@ export const stays = [
     address: "Iseo järve ääres",
     pricePerFamily: 248,
     photo: "iseo",
+    url: "https://www.booking.com/Share-ZEQ1bHY",
     payment: "Maksta 09.07",
     status: "booked",
     note: "Hea asukoht järve ääres, jalutuskäikude kaugusel Sarnicost ja Loverest.",
@@ -352,6 +382,7 @@ export const stays = [
     address: "Garda läänekallas (Manerba / San Felice / Salò kandis)",
     pricePerFamily: 451.33,
     photo: "sirmione",
+    url: "https://www.booking.com/Share-B5sNlV",
     payment: "Makstud",
     status: "paid",
     note: "Basseinidega, suured voodid, hea asukoht. Rannad lähedal: La Romantica, San Felice, Salò.",
@@ -364,6 +395,7 @@ export const stays = [
     address: "~5 min Malpensa lennujaamast",
     pricePerFamily: 94.3,
     photo: "milano",
+    url: "https://www.airbnb.co.uk/rooms/1557308793147256955?unique_share_id=b7563045-b63e-44d9-9463-5039aa280d49&viralityEntryPoint=1&s=76",
     payment: "Makstud",
     status: "paid",
     note: "Viimane öö lennujaama lähedal — mugav enne kojulendu.",
@@ -381,6 +413,7 @@ export const activityRegions = [
     activities: [
       {
         name: "Parco Faunistico Le Cornelle",
+        url: "https://www.lecornelle.it/?lang=en",
         desc: "Üks Itaalia paremaid loomaaedu.",
         price: "~20 € / in · 3–11a soodushinnaga",
       },
@@ -391,6 +424,7 @@ export const activityRegions = [
       },
       {
         name: "Leolandia",
+        url: "https://www.leolandia.it/en/",
         desc: "Teemapark.",
         price: "30 € / tk",
       },
@@ -402,6 +436,7 @@ export const activityRegions = [
     activities: [
       {
         name: "Monte Isola",
+        url: "https://www.navigazionelagoiseo.it/en/",
         desc: "Praamisõit järvel Euroopa suurimale järvesaarele.",
         price: "5–7 € täiskasvanu · 3–5 € laps",
       },
@@ -418,11 +453,13 @@ export const activityRegions = [
     activities: [
       {
         name: "Parco Giardino Sigurtà",
+        url: "https://www.sigurta.it/",
         desc: "Mini-rong, suured muruväljakud ja loomad. Arvesta 3–4 h.",
         price: "18 € täiskasvanu · 0–4a tasuta · mini-rong 5 €/in",
       },
       {
         name: "Parco Natura Viva",
+        url: "https://www.parconaturaviva.it/en",
         desc: "Autosafari ja loomapark. Onlinest odavam, saab ka ilma safarita.",
         price: "30 € / in · 0–2a tasuta",
       },
@@ -453,6 +490,7 @@ export const activityRegions = [
       },
       {
         name: "Museo Nicolis",
+        url: "https://www.museonicolis.com/en/",
         desc: "Auto- ja tehnikamuuseum, 23 min autoga Garda lõunaservast.",
         price: "14 € täiskasvanu · lastele tasuta",
       },
@@ -464,11 +502,13 @@ export const activityRegions = [
     activities: [
       {
         name: "Parco della Preistoria",
+        url: "https://www.parcodellapreistoria.it/",
         desc: "Dinosaurusepark. Arvesta 4–5 h.",
         price: "18 € täiskasvanu · 3–12a 13 € · 0–2a tasuta",
       },
       {
         name: "Civic Aquarium of Milan",
+        url: "https://www.acquariodimilano.it/it/",
         desc: "Milano akvaarium.",
         price: "8 € täiskasvanu · lapsed tasuta",
       },
@@ -503,12 +543,9 @@ export const ticketTips = [
 ];
 
 export const ticketLinks = [
-  { label: "Sigurtà piletid", url: "https://www.parcosigurta.com/tickets" },
-  {
-    label: "Natura Viva piletid",
-    url: "https://www.gardavisit.it/en/experiences/lake-garda-parks-discount-tickets/parco-natura-viva-discount-tickets/",
-  },
-  { label: "Natura Viva (alternatiiv)", url: "https://prezzi.parconaturaviva.it/en" },
+  { label: "Sigurtà piletid", url: "https://ticket.sigurta.it/" },
+  { label: "Natura Viva piletid", url: "https://www.parconaturaviva.it/en" },
+  { label: "Natura Viva — soodushinnad", url: "https://prezzi.parconaturaviva.it/en" },
 ];
 
 // ─────────────────────────────────────────────────────────────

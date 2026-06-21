@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
 import { accents, hexFor } from "@/components/accents";
+import { mapsUrl } from "@/lib/links";
 
 export default function TripMap({ stops, route }) {
   const containerRef = useRef(null);
@@ -63,7 +64,9 @@ export default function TripMap({ stops, route }) {
           .bindPopup(
             `<div class="pop"><strong>${s.name}</strong>${
               s.note ? `<span>${s.note}</span>` : ""
-            }</div>`,
+            }<a class="pop-link" href="${mapsUrl(
+              s.name + ", Italia"
+            )}" target="_blank" rel="noopener noreferrer">Ava Google Mapsis ↗</a></div>`,
             { closeButton: false }
           );
         markersByName[s.name] = { marker, lat: s.lat, lng: s.lng };

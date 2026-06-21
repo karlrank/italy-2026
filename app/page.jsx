@@ -1,4 +1,6 @@
 import { getContent, contentConfigured } from "@/lib/content";
+import { mapsUrl } from "@/lib/links";
+import { linkify } from "@/lib/linkify";
 import { accentFor } from "@/components/accents";
 import { Icon } from "@/components/Icons";
 import Reveal from "@/components/Reveal";
@@ -11,6 +13,7 @@ import TripMap from "@/components/TripMap";
 import Weather from "@/components/Weather";
 import Packing from "@/components/Packing";
 import Flights from "@/components/Flights";
+import Food from "@/components/Food";
 import Photo from "@/components/Photo";
 import LogoutButton from "@/components/LogoutButton";
 
@@ -48,6 +51,7 @@ export default async function Page() {
   const {
     trip,
     flights,
+    food,
     quickFacts,
     stays,
     itinerary,
@@ -124,9 +128,14 @@ export default async function Page() {
             <div className="mx-auto mt-9 flex max-w-3xl flex-wrap items-center justify-center gap-x-2 gap-y-2 text-sm font-medium text-ink/75">
               {trip.route.map((stop, i) => (
                 <span key={i} className="flex items-center gap-2">
-                  <span className="rounded-full bg-white/70 px-3 py-1.5 backdrop-blur">
+                  <a
+                    href={mapsUrl(`${stop}, Italia`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full bg-white/70 px-3 py-1.5 backdrop-blur transition hover:bg-white hover:text-bergamo"
+                  >
                     {stop}
-                  </span>
+                  </a>
                   {i < trip.route.length - 1 && (
                     <Icon name="arrow" className="h-4 w-4 text-ink/35" />
                   )}
@@ -288,21 +297,41 @@ export default async function Page() {
                       </div>
                     </Photo>
                     <div className="flex flex-1 flex-col p-6">
-                      <p className="flex items-center gap-2 text-sm text-ink/60">
+                      <a
+                        href={mapsUrl(`${s.address}, ${s.place}, Italia`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm text-ink/60 transition hover:text-bergamo"
+                      >
                         <Icon name="pin" className="h-4 w-4 shrink-0" />
-                        {s.address}
-                      </p>
+                        <span className="underline-offset-2 hover:underline">
+                          {s.address}
+                        </span>
+                      </a>
                       <p className="mt-3 flex-1 text-sm leading-relaxed text-ink/70">
                         {s.note}
                       </p>
 
-                      <div className="mt-5 flex items-baseline justify-between border-t border-ink/8 pt-4">
-                        <span className="text-xs font-medium uppercase tracking-wider text-ink/45">
-                          Pere kohta
-                        </span>
-                        <span className="font-display text-2xl font-semibold text-ink">
-                          {eur(s.pricePerFamily)}
-                        </span>
+                      <div className="mt-5 flex items-end justify-between border-t border-ink/8 pt-4">
+                        <div>
+                          <span className="block text-xs font-medium uppercase tracking-wider text-ink/45">
+                            Pere kohta
+                          </span>
+                          <span className="font-display text-2xl font-semibold text-ink">
+                            {eur(s.pricePerFamily)}
+                          </span>
+                        </div>
+                        {s.url && (
+                          <a
+                            href={s.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`flex items-center gap-1.5 rounded-full ${a.bgSoft} ${a.text} px-3 py-1.5 text-xs font-semibold transition hover:brightness-95`}
+                          >
+                            Broneering
+                            <Icon name="arrow" className="h-3.5 w-3.5" />
+                          </a>
+                        )}
                       </div>
                     </div>
                   </article>
@@ -345,6 +374,21 @@ export default async function Page() {
         <Reveal>
           <Activities regions={activityRegions} />
         </Reveal>
+      </section>
+
+      {/* ───────────────── SÖÖGIKOHAD ───────────────── */}
+      <section id="sook" className="bg-white/50 py-24 md:py-32">
+        <div className="mx-auto max-w-6xl px-5">
+          <SectionHeading
+            kicker="Kus süüa"
+            title="Söögikohad"
+            editKey="food"
+            sub="Peresõbralikud restoranid ja pizzeriad peatuste lähedal. Klõpsa, et avada kaardil."
+          />
+          <Reveal>
+            <Food food={food} />
+          </Reveal>
+        </div>
       </section>
 
       {/* ───────────────── PAKKIMINE ───────────────── */}
@@ -390,7 +434,7 @@ export default async function Page() {
                         i % 2 ? "bg-cream/40" : ""
                       }`}
                     >
-                      <span className="text-ink/80">{b.name}</span>
+                      <span className="text-ink/80">{linkify(b.name, `bud${i}`)}</span>
                       <span className="font-semibold text-ink">{b.cost}</span>
                     </li>
                   ))}
@@ -478,7 +522,7 @@ export default async function Page() {
                     {n.title}
                   </h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-ink/70">
-                    {n.body}
+                    {linkify(n.body, `pn-${i}`)}
                   </p>
                 </div>
               </div>
@@ -532,7 +576,33 @@ export default async function Page() {
               ))}
             </div>
             <p className="mt-2 text-[0.7rem] text-cream/35">
-              Kaart © OpenStreetMap & CARTO · ilmaandmed Open-Meteo
+              Kaart ©{" "}
+              <a
+                href="https://www.openstreetmap.org/copyright"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline-offset-2 hover:text-sun hover:underline"
+              >
+                OpenStreetMap
+              </a>{" "}
+              &{" "}
+              <a
+                href="https://carto.com/attributions"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline-offset-2 hover:text-sun hover:underline"
+              >
+                CARTO
+              </a>{" "}
+              · ilmaandmed{" "}
+              <a
+                href="https://open-meteo.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline-offset-2 hover:text-sun hover:underline"
+              >
+                Open-Meteo
+              </a>
             </p>
             {isProtected && (
               <div className="mt-5 flex items-center justify-center gap-4">

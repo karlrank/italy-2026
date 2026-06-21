@@ -12,7 +12,8 @@ Leht sisaldab:
 - 🌤️ **Ilm** — tüüpiline juuli iga peatuse jaoks + elav hetketemperatuur (Open-Meteo)
 - 📅 **Ajakava** — interaktiivne päev-päevalt vaade (8 päeva)
 - 🛏️ **Majutus** — neli peatust fotodega, hinnad pere kohta + makseseis
-- 🎟️ **Tegevused** — lastesõbralikud tegevused piirkonna kaupa hindadega
+- 🎟️ **Tegevused** — lastesõbralikud tegevused piirkonna kaupa hindadega (lingitud)
+- 🍝 **Söögikohad** — peresõbralikud restoranid peatuste lähedal (Google Maps lingid)
 - 🧳 **Pakkimisnimekiri** — jagatud, salvestuv nimekiri (vt allpool)
 - 💶 **Eelarve** — piletite kogusumma + näpunäited online-säästuks
 - ℹ️ **Praktiline info** — rendiauto, esmaspäeva-hoiatus jms

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { accentFor } from "@/components/accents";
 import { Icon } from "@/components/Icons";
+import { linkify } from "@/lib/linkify";
 
 export default function Itinerary({ days, dayFocus }) {
   const [active, setActive] = useState(0);
@@ -142,7 +143,7 @@ export default function Itinerary({ days, dayFocus }) {
                   <Icon name="check" className="h-3 w-3" />
                 </span>
                 <p className="text-[0.95rem] leading-relaxed text-ink/85">
-                  {item}
+                  {linkify(item, `d${day.day}-${i}`)}
                 </p>
               </li>
             ))}

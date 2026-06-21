@@ -8,6 +8,7 @@ const links = [
   { id: "ajakava", label: "Ajakava" },
   { id: "majutus", label: "Majutus" },
   { id: "tegevused", label: "Tegevused" },
+  { id: "sook", label: "Söök" },
   { id: "pakkimine", label: "Pakkimine" },
   { id: "eelarve", label: "Eelarve" },
   { id: "info", label: "Info" },

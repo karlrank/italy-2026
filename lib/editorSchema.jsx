@@ -90,6 +90,29 @@ export const SECTIONS = [
     }),
   },
   {
+    key: "food",
+    title: "Söögikohad",
+    hint: "peresõbralikud restoranid",
+    kind: "list",
+    titleKey: "name",
+    addLabel: "+ Lisa söögikoht",
+    fields: [
+      { key: "name", label: "Nimi" },
+      { key: "area", label: "Piirkond / linn (kaardi jaoks)" },
+      { key: "accent", label: "Värv", type: "select", options: opt.accent },
+      { key: "url", label: "Ametlik link (valikuline)", full: true },
+      { key: "note", label: "Märkus", type: "textarea" },
+    ],
+    newItem: () => ({
+      id: "f" + Date.now().toString(36),
+      name: "",
+      area: "",
+      accent: "garda",
+      url: "",
+      note: "",
+    }),
+  },
+  {
     key: "quickFacts",
     title: "Kiirfaktid",
     hint: "hero all",
@@ -152,6 +175,7 @@ export const SECTIONS = [
       { key: "accent", label: "Värv", type: "select", options: opt.accent },
       { key: "photo", label: "Foto", dynamic: "photoKeys" },
       { key: "address", label: "Aadress", full: true },
+      { key: "url", label: "Broneeringu link (valikuline)", full: true },
       { key: "note", label: "Märkus", type: "textarea" },
     ],
     newItem: () => ({
@@ -164,6 +188,7 @@ export const SECTIONS = [
       accent: "garda",
       photo: "garda",
       address: "",
+      url: "",
       note: "",
     }),
   },
@@ -187,9 +212,10 @@ export const SECTIONS = [
       fields: [
         { key: "name", label: "Nimi" },
         { key: "price", label: "Hind" },
+        { key: "url", label: "Ametlik link (valikuline)", full: true },
         { key: "desc", label: "Kirjeldus", type: "textarea" },
       ],
-      newItem: () => ({ name: "", desc: "", price: "" }),
+      newItem: () => ({ name: "", desc: "", price: "", url: "" }),
     },
   },
   {

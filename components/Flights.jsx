@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "@/components/Icons";
+import { mapsUrl, flightTrackerUrl } from "@/lib/links";
 
 // API staatus → eestikeelne silt + värv
 const STATUS = {
@@ -84,7 +85,18 @@ function FlightDialog({ flight, live, onClose }) {
               {flight.direction}
             </span>
             <h2 className="mt-2 font-display text-2xl font-semibold text-ink">
-              {flight.flightNumber || "Lend"}
+              {flight.flightNumber ? (
+                <a
+                  href={flightTrackerUrl(flight.flightNumber)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition hover:text-garda hover:underline"
+                >
+                  {flight.flightNumber}
+                </a>
+              ) : (
+                "Lend"
+              )}
             </h2>
             <p className="text-sm text-ink/55">{fmtDate(flight.date)}</p>
           </div>
@@ -106,24 +118,46 @@ function FlightDialog({ flight, live, onClose }) {
 
           {/* Route */}
           <div className="mt-4 flex items-center gap-3 rounded-2xl bg-white p-4">
-            <div className="min-w-0 flex-1">
+            <a
+              href={mapsUrl(dep?.airport || flight.from || "Malpensa Airport")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="min-w-0 flex-1 transition hover:text-garda"
+            >
               <p className="truncate font-display text-lg font-semibold text-ink">
                 {dep?.iata || flight.from || "—"}
               </p>
               <p className="truncate text-xs text-ink/55">
                 {dep?.airport || dep?.city || ""}
               </p>
-            </div>
+            </a>
             <Icon name="plane" className="h-5 w-5 shrink-0 text-garda" />
-            <div className="min-w-0 flex-1 text-right">
+            <a
+              href={mapsUrl(arr?.airport || flight.to || "Malpensa Airport")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="min-w-0 flex-1 text-right transition hover:text-garda"
+            >
               <p className="truncate font-display text-lg font-semibold text-ink">
                 {arr?.iata || flight.to || "—"}
               </p>
               <p className="truncate text-xs text-ink/55">
                 {arr?.airport || arr?.city || ""}
               </p>
-            </div>
+            </a>
           </div>
+
+          {flight.flightNumber && (
+            <a
+              href={flightTrackerUrl(flight.flightNumber)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-garda transition hover:underline"
+            >
+              <Icon name="plane" className="h-4 w-4" />
+              Jälgi lendu reaalajas (FlightAware) ↗
+            </a>
+          )}
 
           {!live?.found && (
             <p className="mt-4 text-sm text-ink/55">

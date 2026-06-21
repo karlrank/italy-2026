@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { accentFor } from "@/components/accents";
 import { Icon } from "@/components/Icons";
+import { mapsUrl } from "@/lib/links";
 
 export default function Activities({ regions }) {
   const [filter, setFilter] = useState("all");
@@ -64,17 +65,36 @@ export default function Activities({ regions }) {
                       className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${a.gradient} opacity-70`}
                     />
                     <h4 className="font-display text-lg font-semibold leading-snug text-ink">
-                      {act.name}
+                      <a
+                        href={act.url || mapsUrl(`${act.name}, ${region.region}, Italia`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="transition hover:text-bergamo hover:underline"
+                      >
+                        {act.name}
+                      </a>
                     </h4>
                     <p className="mt-2 flex-1 text-sm leading-relaxed text-ink/70">
                       {act.desc}
                     </p>
-                    <p
-                      className={`mt-4 flex items-center gap-1.5 text-sm font-semibold ${a.text}`}
-                    >
-                      <Icon name="euro" className="h-4 w-4" />
-                      {act.price}
-                    </p>
+                    <div className="mt-4 flex items-center justify-between gap-2">
+                      <span
+                        className={`flex items-center gap-1.5 text-sm font-semibold ${a.text}`}
+                      >
+                        <Icon name="euro" className="h-4 w-4" />
+                        {act.price}
+                      </span>
+                      <a
+                        href={mapsUrl(`${act.name}, ${region.region}, Italia`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-ink/55 transition hover:bg-ink/5 hover:text-ink"
+                        title="Ava Google Mapsis"
+                      >
+                        <Icon name="pin" className="h-3.5 w-3.5" />
+                        Kaardil
+                      </a>
+                    </div>
                   </article>
                 ))}
               </div>

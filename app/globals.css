@@ -161,6 +161,13 @@ body {
   line-height: 1.4;
   color: rgba(42, 33, 24, 0.65);
 }
+.leaflet-popup-content .pop a.pop-link {
+  display: inline-block;
+  margin-top: 7px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-iseo);
+}
 .leaflet-bar a,
 .leaflet-control-zoom a {
   border-radius: 10px !important;
