@@ -16,6 +16,7 @@ Leht sisaldab:
 - 💶 **Eelarve** — piletite kogusumma + näpunäited online-säästuks
 - ℹ️ **Praktiline info** — rendiauto, esmaspäeva-hoiatus jms
 - 🔒 **Paroolikaitse** — valikuline, oma sisselogimislehega (vt allpool)
+- ✏️ **Sisuhaldus (CMS)** — lisa/muuda/kustuta enamikku sisust `/admin` all (vt allpool)
 
 ## Tehnoloogia
 
@@ -52,6 +53,29 @@ Tee uus deploy. Pärast seda:
   Seda saab kontrollida: `grep -r "Perekond Murd" .next/static` → tühi.
 
 Ilma `SITE_PASSWORD`-muutujata on sait avatud (mugav arenduseks).
+
+## Sisuhaldus (CMS)
+
+Enamikku sisust saab muuta otse veebis, ilma koodi puutumata, lehel **`/admin`**
+(link on jaluses „Halda sisu“, nähtav sisseloginuna).
+
+Redigeerida saab: reisi pealkiri/kuupäevad/pered, kiirfaktid, **ajakava**
+(päevad + tegevused), **majutus**, **tegevused**, **eelarve**, **kaardi
+peatused**, **ilm**, piletivihjed/lingid, praktiline info, pakkimiskategooriad
+ja fotode URL-id. Iga nimekirja saab täiendada, ümber järjestada (↑/↓) ja
+kustutada.
+
+Kuidas see töötab:
+
+- Vaikesisu elab failis [`data/trip.js`](data/trip.js).
+- Kui **KV-andmebaas on ühendatud** (sama, mida pakkimisnimekiri kasutab —
+  vt allpool), salvestatakse muudatused sinna ja leht loeb need sealt. Klõps
+  „Salvesta“ kirjutab kogu sisu KV-sse; „Taasta vaikeväärtused“ kustutab selle.
+- Ilma KV-ta on `/admin` **ainult vaatamiseks** (muudatusi ei saa salvestada) —
+  leht kasutab vaikesisu.
+
+Turvalisus: `/admin` ja sisu-API (`/api/content`) on middleware'iga kaitstud
+(vajavad sisselogimist), nii et muuta saavad ainult parooli teadjad.
 
 ## Pakkimisnimekiri — jagatud salvestus
 

@@ -1,23 +1,4 @@
-import {
-  trip,
-  quickFacts,
-  stays,
-  budgetActivities,
-  budgetActivitiesTotal,
-  budgetActivitiesNote,
-  ticketTips,
-  ticketLinks,
-  practicalNotes,
-  photos,
-  stayPhotoKey,
-  itinerary,
-  dayFocus,
-  activityRegions,
-  climate,
-  mapStops,
-  routePath,
-  packingCategories,
-} from "@/data/trip";
+import { getContent } from "@/lib/content";
 import { accentFor } from "@/components/accents";
 import { Icon } from "@/components/Icons";
 import Reveal from "@/components/Reveal";
@@ -31,12 +12,15 @@ import Packing from "@/components/Packing";
 import Photo from "@/components/Photo";
 import LogoutButton from "@/components/LogoutButton";
 
+export const dynamic = "force-dynamic";
+
 const isProtected = Boolean(process.env.SITE_PASSWORD);
 
-const stayTotalPerFamily = stays.reduce((s, x) => s + x.pricePerFamily, 0);
 const eur = (n) =>
-  n.toLocaleString("et-EE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) +
-  " €";
+  (Number(n) || 0).toLocaleString("et-EE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }) + " €";
 
 function SectionHeading({ kicker, title, sub }) {
   return (
@@ -52,7 +36,31 @@ function SectionHeading({ kicker, title, sub }) {
   );
 }
 
-export default function Page() {
+export default async function Page() {
+  const content = await getContent();
+  const {
+    trip,
+    quickFacts,
+    stays,
+    itinerary,
+    activityRegions,
+    mapStops,
+    routePath,
+    climate,
+    ticketTips,
+    ticketLinks,
+    practicalNotes,
+    packingCategories,
+    photos,
+    dayFocus,
+    budget,
+  } = content;
+
+  const stayTotalPerFamily = stays.reduce(
+    (s, x) => s + (Number(x.pricePerFamily) || 0),
+    0
+  );
+
   return (
     <main id="top" className="bg-grain">
       <Nav />
@@ -215,8 +223,8 @@ export default function Page() {
                 <Reveal key={s.place} delay={i * 80}>
                   <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-ink/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_50px_-30px_rgba(42,33,24,0.5)]">
                     <Photo
-                      src={photos[stayPhotoKey[s.place]].src}
-                      alt={photos[stayPhotoKey[s.place]].label}
+                      src={(photos[s.photo] || photos.bergamo).src}
+                      alt={(photos[s.photo] || photos.bergamo).label}
                       gradient={a.gradient}
                       className="h-44 w-full"
                       imgClassName="transition-transform duration-700 group-hover:scale-105"
@@ -333,7 +341,7 @@ export default function Page() {
                   </h3>
                 </div>
                 <ul>
-                  {budgetActivities.map((b, i) => (
+                  {budget.items.map((b, i) => (
                     <li
                       key={b.name}
                       className={`flex items-center justify-between px-6 py-3 text-sm ${
@@ -349,11 +357,11 @@ export default function Page() {
                   <div>
                     <span className="font-display text-lg font-semibold">KOKKU</span>
                     <span className="ml-2 text-xs text-cream/60">
-                      {budgetActivitiesNote}
+                      {budget.note}
                     </span>
                   </div>
                   <span className="font-display text-2xl font-semibold text-sun">
-                    {budgetActivitiesTotal}
+                    {budget.total}
                   </span>
                 </div>
               </div>
@@ -484,7 +492,14 @@ export default function Page() {
               Kaart © OpenStreetMap & CARTO · ilmaandmed Open-Meteo
             </p>
             {isProtected && (
-              <div className="mt-5">
+              <div className="mt-5 flex items-center justify-center gap-4">
+                <a
+                  href="/admin"
+                  className="text-xs font-medium text-cream/45 underline-offset-4 transition hover:text-sun hover:underline"
+                >
+                  Halda sisu
+                </a>
+                <span className="text-cream/20">·</span>
                 <LogoutButton />
               </div>
             )}

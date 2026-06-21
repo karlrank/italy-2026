@@ -39,9 +39,12 @@ export default function TripMap({ stops, route }) {
         opacity: 0.95,
       }).addTo(map);
 
-      // Markers
+      // Markers (jäta vahele vigaste koordinaatidega peatused)
+      const validStops = (stops || []).filter(
+        (s) => Number.isFinite(s.lat) && Number.isFinite(s.lng)
+      );
       const markersByName = {};
-      stops.forEach((s) => {
+      validStops.forEach((s) => {
         const color = hexFor(s.region);
         const isStay = s.type === "stay";
         const isAirport = s.type === "airport";
@@ -66,8 +69,12 @@ export default function TripMap({ stops, route }) {
         markersByName[s.name] = { marker, lat: s.lat, lng: s.lng };
       });
 
-      const bounds = L.latLngBounds(stops.map((s) => [s.lat, s.lng]));
-      map.fitBounds(bounds, { padding: [45, 45] });
+      if (validStops.length) {
+        const bounds = L.latLngBounds(validStops.map((s) => [s.lat, s.lng]));
+        map.fitBounds(bounds, { padding: [45, 45] });
+      } else {
+        map.setView([45.55, 10.2], 8);
+      }
 
       // Ajakavast tulev "Vaata kaardil" sündmus
       const onFocus = (e) => {
