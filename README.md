@@ -6,6 +6,8 @@ Marsruut: **Malpensa → Bergamo → Lake Iseo → Gardajärv → Milano**
 
 Leht sisaldab:
 
+- ⏳ **Loendus** — reaalajas taimer reisi alguseni
+- 🗺️ **Interaktiivne kaart** — kogu marsruut, ööbimised ja peatused (Leaflet)
 - 📅 **Ajakava** — interaktiivne päev-päevalt vaade (8 päeva)
 - 🛏️ **Majutus** — neli peatust, hinnad pere kohta + makseseis
 - 🎟️ **Tegevused** — lastesõbralikud tegevused piirkonna kaupa hindadega
@@ -16,6 +18,7 @@ Leht sisaldab:
 
 - [Next.js 15](https://nextjs.org/) (App Router, staatiline väljund)
 - [Tailwind CSS v4](https://tailwindcss.com/)
+- [Leaflet](https://leafletjs.com/) + CARTO kaardiplaadid (võtmeta)
 - Fraunces + Inter (Google Fonts)
 
 Kogu reisi sisu elab ühes failis: [`data/trip.js`](data/trip.js). Andmete

@@ -15,6 +15,8 @@ import Reveal from "@/components/Reveal";
 import Nav from "@/components/Nav";
 import Itinerary from "@/components/Itinerary";
 import Activities from "@/components/Activities";
+import Countdown from "@/components/Countdown";
+import TripMap from "@/components/TripMap";
 
 const stayTotalPerFamily = stays.reduce((s, x) => s + x.pricePerFamily, 0);
 const eur = (n) =>
@@ -139,6 +141,25 @@ export default function Page() {
             </Reveal>
           ))}
         </div>
+      </section>
+
+      {/* ───────────────── COUNTDOWN ───────────────── */}
+      <section className="mx-auto mt-12 max-w-6xl px-5">
+        <Reveal>
+          <Countdown />
+        </Reveal>
+      </section>
+
+      {/* ───────────────── KAART ───────────────── */}
+      <section id="kaart" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
+        <SectionHeading
+          kicker="Marsruut"
+          title="Reisi kaart"
+          sub="Kogu teekond ühel pilgul — ööbimised, peatused ja vaatamisväärsused. Klõpsa märgil, et näha rohkem."
+        />
+        <Reveal>
+          <TripMap />
+        </Reveal>
       </section>
 
       {/* ───────────────── AJAKAVA ───────────────── */}

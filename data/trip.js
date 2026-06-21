@@ -6,8 +6,153 @@ export const trip = {
   dateRange: "24.–31. juuli 2026",
   families: ["Perekond Murd", "Perekond Rankla"],
   group: "4 täiskasvanut + 3 last (4-aastane, 3-aastane ja alla 2-aastane)",
-  route: ["Malpensa", "Bergamo", "Lake Iseo", "Gardajärv", "Malpensa"],
+  route: ["Malpensa", "Bergamo", "Lake Iseo", "Gardajärv", "Milano"],
+  startISO: "2026-07-24T00:00:00",
+  endISO: "2026-07-31T23:59:59",
 };
+
+// ─────────────────────────────────────────────────────────────
+// KAART — peatused ja marsruut
+// ─────────────────────────────────────────────────────────────
+// type: "airport" | "stay" | "spot"
+export const mapStops = [
+  {
+    name: "Malpensa lennujaam",
+    region: "airport",
+    type: "airport",
+    emoji: "✈️",
+    lat: 45.6306,
+    lng: 8.7281,
+    note: "Saabumine ja lahkumine. Siit ka rendiauto.",
+  },
+  {
+    name: "Bergamo — majutus",
+    region: "bergamo",
+    type: "stay",
+    emoji: "🛏️",
+    lat: 45.71,
+    lng: 9.677,
+    note: "Via Stelvio 8 · 24.–25.07. Õhtul Città Alta köisraudteega.",
+  },
+  {
+    name: "Le Cornelle loomaaed",
+    region: "bergamo",
+    type: "spot",
+    emoji: "🦒",
+    lat: 45.7237,
+    lng: 9.586,
+    note: "Üks Itaalia paremaid loomaaedu · 25.07.",
+  },
+  {
+    name: "Lake Iseo — majutus",
+    region: "iseo",
+    type: "stay",
+    emoji: "🛏️",
+    lat: 45.6603,
+    lng: 10.0537,
+    note: "Järve ääres · 25.–27.07.",
+  },
+  {
+    name: "Monte Isola",
+    region: "iseo",
+    type: "spot",
+    emoji: "⛴️",
+    lat: 45.717,
+    lng: 10.077,
+    note: "Praamisõit Euroopa suurimale järvesaarele · 26.07.",
+  },
+  {
+    name: "Sarnico",
+    region: "iseo",
+    type: "spot",
+    emoji: "🍦",
+    lat: 45.6699,
+    lng: 9.9569,
+    note: "Promenaad ja jäätisekohvikud.",
+  },
+  {
+    name: "Parco Giardino Sigurtà",
+    region: "garda",
+    type: "spot",
+    emoji: "🌳",
+    lat: 45.3625,
+    lng: 10.734,
+    note: "Mini-rong, muruväljakud, loomad · 27.07.",
+  },
+  {
+    name: "Valeggio · Borghetto",
+    region: "garda",
+    type: "spot",
+    emoji: "🍝",
+    lat: 45.349,
+    lng: 10.733,
+    note: "Kuulsad tortellinid ja vesiveskite küla · 27.07.",
+  },
+  {
+    name: "Gardajärv — majutus",
+    region: "garda",
+    type: "stay",
+    emoji: "🛏️",
+    lat: 45.5466,
+    lng: 10.5616,
+    note: "Basseiniga, läänekallas · 27.–30.07.",
+  },
+  {
+    name: "Parco Natura Viva",
+    region: "garda",
+    type: "spot",
+    emoji: "🦁",
+    lat: 45.4815,
+    lng: 10.7177,
+    note: "Autosafari + loomapark · 28.07.",
+  },
+  {
+    name: "Sirmione",
+    region: "garda",
+    type: "spot",
+    emoji: "🏰",
+    lat: 45.4946,
+    lng: 10.6066,
+    note: "Vanalinn ja 25-min paadisõit · 29.07.",
+  },
+  {
+    name: "Parco della Preistoria",
+    region: "milano",
+    type: "spot",
+    emoji: "🦕",
+    lat: 45.469,
+    lng: 9.523,
+    note: "Dinosaurusepark · 30.07.",
+  },
+  {
+    name: "Milano akvaarium",
+    region: "milano",
+    type: "spot",
+    emoji: "🐠",
+    lat: 45.475,
+    lng: 9.179,
+    note: "Civic Aquarium · 30.07.",
+  },
+  {
+    name: "Milano — majutus",
+    region: "milano",
+    type: "stay",
+    emoji: "🛏️",
+    lat: 45.62,
+    lng: 8.73,
+    note: "~5 min lennujaamast · 30.–31.07.",
+  },
+];
+
+// Ööbimiste marsruut (joon kaardil)
+export const routePath = [
+  [45.6306, 8.7281], // Malpensa
+  [45.71, 9.677], // Bergamo
+  [45.6603, 10.0537], // Lake Iseo
+  [45.5466, 10.5616], // Garda
+  [45.62, 8.73], // Milano (lennujaama lähedal)
+  [45.6306, 8.7281], // tagasi Malpensa
+];
 
 export const quickFacts = [
   { label: "Kestus", value: "8 päeva / 7 ööd", icon: "calendar" },

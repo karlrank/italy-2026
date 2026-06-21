@@ -10,6 +10,7 @@ export const accents = {
     dot: "bg-bergamo",
     gradient: "from-bergamo to-sun",
     label: "Bergamo",
+    hex: "#d97642",
   },
   iseo: {
     text: "text-iseo",
@@ -20,6 +21,7 @@ export const accents = {
     dot: "bg-iseo",
     gradient: "from-iseo to-garda",
     label: "Lake Iseo",
+    hex: "#2f7d8c",
   },
   garda: {
     text: "text-garda",
@@ -30,6 +32,7 @@ export const accents = {
     dot: "bg-garda",
     gradient: "from-garda to-iseo",
     label: "Gardajärv",
+    hex: "#3a6ea5",
   },
   milano: {
     text: "text-milano",
@@ -40,7 +43,20 @@ export const accents = {
     dot: "bg-milano",
     gradient: "from-milano to-bergamo",
     label: "Milano",
+    hex: "#8a5a83",
+  },
+  airport: {
+    text: "text-ink",
+    bgSoft: "bg-ink/10",
+    bgSolid: "bg-ink",
+    border: "border-ink",
+    ring: "ring-ink/30",
+    dot: "bg-ink",
+    gradient: "from-ink to-ink",
+    label: "Lennujaam",
+    hex: "#2a2118",
   },
 };
 
 export const accentFor = (key) => accents[key] || accents.bergamo;
+export const hexFor = (key) => (accents[key] || accents.bergamo).hex;
