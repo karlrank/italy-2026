@@ -36,6 +36,50 @@ export const flights = [
 ];
 
 // ─────────────────────────────────────────────────────────────
+// RENDIAUTOD
+// ─────────────────────────────────────────────────────────────
+export const cars = [
+  {
+    id: "rankla",
+    family: "Perekond Rankla",
+    provider: "Europcar",
+    accent: "iseo",
+    status: "confirmed",
+    vehicle: "Audi A3 Automaatne (või sarnane)",
+    transmission: "Automaat",
+    seats: 5,
+    luggage: 3,
+    pickup: "Malpensa T1 · 24.07 kl 13:00",
+    dropoff: "Malpensa T1 · 31.07 kl 11:30",
+    driver: "Karl Rankla",
+    reservation: "1204098021",
+    price: "742,96 € (7 päeva)",
+    deposit: "100 € tagatis",
+    note: "Sisaldab lapse turvatooli ja piiramatut läbisõitu. Comfort-pakett. Jaam: +39 02 30568786. Seotud lennuga FR8903.",
+    url: "https://www.europcar.com/",
+  },
+  {
+    id: "murd",
+    family: "Perekond Murd",
+    provider: "Sixt",
+    accent: "bergamo",
+    status: "likely",
+    vehicle: "BMW 1 Series Automaatne",
+    transmission: "Automaat",
+    seats: 5,
+    luggage: 3,
+    pickup: "Malpensa T1 · 24.07 kl 13:00",
+    dropoff: "Malpensa T1 · 31.07 kl 10:00",
+    driver: "",
+    reservation: "",
+    price: "~491,98 € (70,28 €/päev)",
+    deposit: "",
+    note: "Piiramatu läbisõit. Veel kinnitamata — tõenäoline valik.",
+    url: "https://www.sixt.ee/",
+  },
+];
+
+// ─────────────────────────────────────────────────────────────
 // SÖÖGIKOHAD (peresõbralikud, peatuste lähedal). Link → Google Maps.
 // ─────────────────────────────────────────────────────────────
 export const food = [

@@ -13,6 +13,7 @@ import TripMap from "@/components/TripMap";
 import Weather from "@/components/Weather";
 import Packing from "@/components/Packing";
 import Flights from "@/components/Flights";
+import Cars from "@/components/Cars";
 import Food from "@/components/Food";
 import Photo from "@/components/Photo";
 import LogoutButton from "@/components/LogoutButton";
@@ -51,6 +52,7 @@ export default async function Page() {
   const {
     trip,
     flights,
+    cars,
     food,
     quickFacts,
     stays,
@@ -220,6 +222,19 @@ export default async function Page() {
         />
         <Reveal>
           <Flights flights={flights} />
+        </Reveal>
+      </section>
+
+      {/* ───────────────── RENDIAUTOD ───────────────── */}
+      <section id="autod" className="mx-auto max-w-6xl px-5 pb-10 md:pb-12">
+        <SectionHeading
+          kicker="Rendiautod"
+          title="Autod"
+          editKey="cars"
+          sub="Kaks autot Malpensa lennujaamast. Üks kinnitatud, teine tõenäoline."
+        />
+        <Reveal>
+          <Cars cars={cars} />
         </Reveal>
       </section>
 

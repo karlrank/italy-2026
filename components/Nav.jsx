@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 const links = [
   { id: "lennud", label: "Lennud" },
+  { id: "autod", label: "Autod" },
   { id: "kaart", label: "Kaart" },
   { id: "ajakava", label: "Ajakava" },
   { id: "majutus", label: "Majutus" },
