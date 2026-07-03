@@ -14,6 +14,7 @@ import Weather from "@/components/Weather";
 import Packing from "@/components/Packing";
 import Flights from "@/components/Flights";
 import Cars from "@/components/Cars";
+import ZtlGuide from "@/components/ZtlGuide";
 import Food from "@/components/Food";
 import Photo from "@/components/Photo";
 import LogoutButton from "@/components/LogoutButton";
@@ -525,6 +526,9 @@ export default async function Page() {
           editKey="practicalNotes"
           sub="Mõned asjad, mida tasub meeles pidada."
         />
+        <Reveal className="mb-5">
+          <ZtlGuide />
+        </Reveal>
         <div className="grid gap-5 sm:grid-cols-2">
           {practicalNotes.map((n, i) => (
             <Reveal key={n.title} delay={i * 80}>
