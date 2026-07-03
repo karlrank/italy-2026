@@ -212,6 +212,7 @@ export const SECTIONS = [
       { key: "title", label: "Pealkiri", full: true },
       { key: "drive", label: "Sõit", full: true },
       { key: "warning", label: "Hoiatus (valikuline)", full: true },
+      { key: "ztl", label: "ZTL-märkus (valikuline)", full: true },
     ],
     newItem: () => ({
       day: "",
@@ -222,6 +223,7 @@ export const SECTIONS = [
       title: "",
       drive: "",
       stay: "",
+      ztl: "",
       items: [],
     }),
   },

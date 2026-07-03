@@ -122,6 +122,25 @@ export default function Itinerary({ days, dayFocus, food = [] }) {
                 <span>{day.warning}</span>
               </div>
             )}
+            {day.ztl && (
+              <a
+                href="#info"
+                className="mt-3 flex items-start gap-2.5 rounded-2xl border border-[#d92b2b]/25 bg-[#d92b2b]/8 p-3.5 text-sm text-ink/80 transition hover:bg-[#d92b2b]/15"
+                title="Vaata ZTL-märkide juhendit"
+              >
+                <span
+                  aria-hidden="true"
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded-full border-[3.5px] border-[#d92b2b]"
+                />
+                <span>
+                  <span className="font-semibold text-[#b02323]">ZTL:</span>{" "}
+                  {day.ztl}{" "}
+                  <span className="whitespace-nowrap text-xs font-semibold text-[#b02323] underline-offset-2 hover:underline">
+                    Loe juhendit →
+                  </span>
+                </span>
+              </a>
+            )}
             {dayFocus[day.day] && (
               <button
                 onClick={focusOnMap}

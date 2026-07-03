@@ -270,6 +270,7 @@ export const quickFacts = [
 export const itinerary = [
   {
     day: "1",
+    ztl: "Città Alta on ZTL — pargi Parcheggio Fara parklasse ja sõida köisraudteega.",
     weekday: "Reede",
     date: "24.07",
     title: "Saabumine & Bergamo",
@@ -319,6 +320,7 @@ export const itinerary = [
   },
   {
     day: "4",
+    ztl: "Valeggio/Borghetto kesklinn on osaliselt suletud autodele — pargi küla servale.",
     weekday: "Esmaspäev",
     date: "27.07",
     title: "Sigurtà park & Valeggio → Garda",
@@ -353,6 +355,7 @@ export const itinerary = [
   },
   {
     day: "6",
+    ztl: "Sirmione vanalinn on ZTL — pargi poolsaare parklatesse ja jaluta.",
     weekday: "Kolmapäev",
     date: "29.07",
     title: "Gardajärv — rand & Sirmione",
