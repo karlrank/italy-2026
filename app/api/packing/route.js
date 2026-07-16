@@ -5,6 +5,7 @@
 import {
   getContent,
   saveContent,
+  editorFrom,
   contentConfigured,
 } from "@/lib/content";
 
@@ -64,7 +65,10 @@ export async function POST(request) {
   }
 
   try {
-    await saveContent({ ...content, packingCategories: cats });
+    await saveContent(
+      { ...content, packingCategories: cats },
+      editorFrom(request, "packing")
+    );
     return Response.json({ ok: true, categories: cats });
   } catch {
     return Response.json({ ok: false, error: "write failed" }, { status: 502 });

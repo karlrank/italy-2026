@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SECTIONS, SectionEditor } from "@/lib/editorSchema";
+import History from "@/components/admin/History";
 
 function Section({ title, hint, children, defaultOpen = false }) {
   return (
@@ -130,6 +131,10 @@ export default function AdminPage() {
               />
             </Section>
           ))}
+
+          <Section title="Muudatuste ajalugu" hint="varukoopiad ja taastamine">
+            <History onRestored={load} />
+          </Section>
         </div>
       </div>
 
