@@ -200,7 +200,15 @@ function airlabsSeg(f, p) {
 
 async function queryAirlabs(number, date) {
   const url = `https://${AIRLABS_HOST}/flight?flight_iata=${encodeURIComponent(number)}`;
-  const { r, raw, data } = await fetchJson(url, AIRLABS_HOST);
+  let { r, raw, data } = await fetchJson(url, AIRLABS_HOST);
+
+  // AirLabsi 429 on RapidAPI sekundipiirang (mitu lendu päritakse korraga),
+  // mis taastub kohe — erinevalt AeroDataBoxi kuukvoodist tasub üks
+  // viivitusega kordus. Kvoodi-429 puhul kordus lihtsalt ebaõnnestub uuesti.
+  if (r && r.status === 429) {
+    await sleep(1500 + Math.floor(Math.random() * 500));
+    ({ r, raw, data } = await fetchJson(url, AIRLABS_HOST));
+  }
 
   if (!r || !r.ok || data?.error) {
     const message =
