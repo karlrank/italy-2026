@@ -313,7 +313,7 @@ export async function GET(request) {
   const cacheKey = `flight:${number}:${date}`;
   if (!refresh) {
     const cached = await getCached(cacheKey);
-    if (cached) return Response.json({ ...cached, cached: true });
+    if (cached) return jsonCached({ ...cached, cached: true }, date, false);
   }
 
   try {
@@ -350,7 +350,7 @@ export async function GET(request) {
         ? ttlSeconds(hoursUntil)
         : ERROR_TTL;
     await setCached(cacheKey, body, ttl);
-    return Response.json(body);
+    return jsonCached(body, date, refresh);
   } catch (e) {
     console.error(`[flight] ${number} ${date} → exception: ${e?.message}`);
     return Response.json({ configured: true, found: false, error: "fetch failed" });
