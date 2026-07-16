@@ -1,13 +1,16 @@
 // Elav lennustaatus. Pärib lennuandmete API-st serveripoolselt, et API
 // võti jääks salajaseks. Kaitstud middleware'iga.
 //
-// Peamine allikas on AeroDataBox (RapidAPI); kui see ei vasta või ei
-// leia lendu (nt kvoot otsas → 429), proovitakse varuks AirLabs'i otse
-// (airlabs.co, oma võti — RapidAPI AirLabsi list on katki).
+// Allikate järjekord:
+//   1. AeroDataBox RapidAPI kaudu (peamine)
+//   2. AeroDataBox api.market kaudu (sama andmestik, eraldi kvoot —
+//      jäetakse vahele, kui 1. juba vastas sisuga "lendu pole")
+//   3. AirLabs otse (airlabs.co, oma võti — RapidAPI AirLabsi list on katki)
 //
-//   FLIGHT_API_KEY   – RapidAPI võti AeroDataBoxile (kohustuslik)
-//   FLIGHT_API_HOST  – vaikimisi aerodatabox.p.rapidapi.com
-//   AIRLABS_API_KEY  – airlabs.co võti (valikuline; ilma selleta varu puudub)
+//   FLIGHT_API_KEY        – RapidAPI võti AeroDataBoxile
+//   FLIGHT_API_HOST       – vaikimisi aerodatabox.p.rapidapi.com
+//   FLIGHT_APIMARKET_KEY  – api.market võti AeroDataBoxile (valikuline)
+//   AIRLABS_API_KEY       – airlabs.co võti (valikuline)
 //
 // Tulemused vahemälustatakse KV-s (globaalne, jagatud kõigi külastajate
 // vahel) või protsessimälus, kui KV puudub. Vahemälu eluiga sõltub sellest,
@@ -27,6 +30,7 @@ export const dynamic = "force-dynamic";
 
 const KEY = process.env.FLIGHT_API_KEY || "";
 const HOST = process.env.FLIGHT_API_HOST || "aerodatabox.p.rapidapi.com";
+const APIMARKET_KEY = process.env.FLIGHT_APIMARKET_KEY || "";
 const AIRLABS_KEY = process.env.AIRLABS_API_KEY || "";
 
 const HOUR = 3600;
@@ -133,17 +137,28 @@ function seg(s) {
   };
 }
 
-async function queryAeroDataBox(number, date) {
-  const url = `https://${HOST}/flights/number/${number}/${date}?withAircraftImage=false&withLocation=false`;
-  const { r, raw, data } = await fetchJson(url, {
-    "X-RapidAPI-Key": KEY,
-    "X-RapidAPI-Host": HOST,
-  });
+// AeroDataBoxi väravad — sama API, eri turuplatsid oma kvootidega
+const ADB_GATEWAYS = {
+  rapidapi: {
+    name: "aerodatabox",
+    base: () => `https://${HOST}`,
+    headers: () => ({ "X-RapidAPI-Key": KEY, "X-RapidAPI-Host": HOST }),
+  },
+  apimarket: {
+    name: "aerodatabox-apimarket",
+    base: () => "https://prod.api.market/api/v1/aedbx/aerodatabox",
+    headers: () => ({ "x-magicapi-key": APIMARKET_KEY }),
+  },
+};
+
+async function queryAeroDataBox(number, date, gateway) {
+  const url = `${gateway.base()}/flights/number/${number}/${date}?withAircraftImage=false&withLocation=false`;
+  const { r, raw, data } = await fetchJson(url, gateway.headers());
 
   if (!r || !r.ok) {
     const message =
       (data && (data.message || data.error)) || raw.slice(0, 200) || "";
-    console.error(`[flight] aerodatabox ${number} ${date} → ${r?.status}: ${message}`);
+    console.error(`[flight] ${gateway.name} ${number} ${date} → ${r?.status}: ${message}`);
     return { configured: true, found: false, upstreamStatus: r?.status || 0, message };
   }
 
@@ -155,7 +170,7 @@ async function queryAeroDataBox(number, date) {
   return {
     configured: true,
     found: true,
-    source: "aerodatabox",
+    source: gateway.name,
     status: leg.status || "Unknown",
     number: leg.number || number,
     callSign: leg.callSign || null,
@@ -256,7 +271,9 @@ export async function GET(request) {
     .toUpperCase();
   const date = searchParams.get("date") || "";
 
-  if (!KEY) return Response.json({ configured: false });
+  if (!KEY && !APIMARKET_KEY && !AIRLABS_KEY) {
+    return Response.json({ configured: false });
+  }
   if (!/^[A-Z0-9]{2,8}$/.test(number) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return Response.json({ configured: true, error: "bad params" }, { status: 400 });
   }
@@ -266,9 +283,19 @@ export async function GET(request) {
   if (cached) return Response.json({ ...cached, cached: true });
 
   try {
-    let result = await queryAeroDataBox(number, date);
+    let result = KEY
+      ? await queryAeroDataBox(number, date, ADB_GATEWAYS.rapidapi)
+      : { configured: true, found: false, upstreamStatus: 0, message: "" };
 
-    // Kui peamine ei leidnud või on maas (nt kvoot otsas), proovi varu.
+    // Sama API teise värava kaudu — mõttekas ainult siis, kui esimene
+    // EI saanud sisulist vastust (kvoot/viga); "lendu pole" (200) kehtib
+    // mõlemas väravas ühtmoodi
+    if (!result.found && result.upstreamStatus !== 200 && APIMARKET_KEY) {
+      const alt = await queryAeroDataBox(number, date, ADB_GATEWAYS.apimarket);
+      if (alt.found || alt.upstreamStatus === 200) result = alt;
+    }
+
+    // Kui AeroDataBox ei leidnud või on maas, proovi AirLabs'i.
     // Varu "ei leitud" (200) on kasutajale parem vastus kui kvoodiviga.
     if (!result.found && AIRLABS_KEY) {
       const fallback = await queryAirlabs(number, date);
