@@ -5,12 +5,26 @@ import {
   getContent,
   saveContent,
   resetContent,
+  listBackups,
   contentConfigured,
 } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request) {
+  // ?backups=1 → list snapshot timestamps (newest first), for verifying
+  // that the pre-save backups exist. Restoring goes via Upstash Data Browser.
+  if (new URL(request.url).searchParams.get("backups") === "1") {
+    const stamps = await listBackups();
+    return Response.json({
+      configured: contentConfigured,
+      count: stamps.length,
+      backups: stamps.map((ts) => ({
+        key: `content:backup:${ts}`,
+        savedAt: new Date(ts).toISOString(),
+      })),
+    });
+  }
   const content = await getContent();
   return Response.json({ configured: contentConfigured, content });
 }
