@@ -11,8 +11,12 @@ const OLD = {
   token: process.env.KV_REST_API_TOKEN || "",
 };
 const NEW = {
-  url: process.env.KV_EU_REST_API_URL || "",
-  token: process.env.KV_EU_REST_API_TOKEN || "",
+  url:
+    process.env.KV_EU_KV_REST_API_URL || process.env.KV_EU_REST_API_URL || "",
+  token:
+    process.env.KV_EU_KV_REST_API_TOKEN ||
+    process.env.KV_EU_REST_API_TOKEN ||
+    "",
 };
 
 async function cmd(store, command) {
