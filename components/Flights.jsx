@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { Icon } from "@/components/Icons";
 import { mapsUrl, flightTrackerUrl } from "@/lib/links";
 
-// API staatus → eestikeelne silt + värv
+// API status → Estonian label + color
 const STATUS = {
   Scheduled: { label: "Plaanis", cls: "bg-iseo-soft text-iseo" },
   Expected: { label: "Oodatud", cls: "bg-iseo-soft text-iseo" },
@@ -232,13 +232,13 @@ function FlightCard({ flight, index = 0 }) {
     let cancelled = false;
     let timerId = null;
     let lastLoad = 0;
-    // Väljumisaeg täpsustub live-andmetega; enne seda eelda keskpäeva
+    // Departure time gets refined by live data; until then assume midday
     let depMs = new Date(`${flight.date}T12:00:00`).getTime();
 
-    // Pollimissamm sõltub lennu kaugusest (server vahemälustab sama astmega,
-    // nii et tegelik API-kulu on jagatud kõigi külastajate vahel):
-    //   >48 h → ei polli (piisab ühest laadimisest); 48–24 h → 2 h;
-    //   24–6 h → 1 h; viimased 6 h kuni saabumiseni → 15 min; möödas → ei polli
+    // Polling interval depends on how far away the flight is (the server caches
+    // with the same tier, so the actual API cost is shared across all visitors):
+    //   >48 h → no polling (a single load is enough); 48–24 h → 2 h;
+    //   24–6 h → 1 h; last 6 h until arrival → 15 min; already past → no polling
     const pollMs = () => {
       const h = (depMs - Date.now()) / 3600000;
       if (h > 48) return null;
@@ -277,10 +277,10 @@ function FlightCard({ flight, index = 0 }) {
       schedule();
     };
 
-    // Hajuta esmased päringud, et mitte tabada API kiiruspiiri (1 päring/sek)
+    // Stagger the initial requests to avoid hitting the API rate limit (1 request/sec)
     const startId = setTimeout(load, index * 1500);
-    // Tab'i fookusesse tulek värskendab ainult siis, kui andmed on
-    // pollimissammu jagu vananenud — mitte igal pilgul
+    // Returning focus to the tab refreshes only when the data is stale
+    // by at least one polling interval — not on every glance
     const onVis = () => {
       const ms = pollMs();
       if (

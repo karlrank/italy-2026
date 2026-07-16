@@ -8,7 +8,7 @@ import { mapsUrl } from "@/lib/links";
 export default function Food({ food }) {
   const [filter, setFilter] = useState("all");
 
-  // Piirkonnad järjekorras, nagu need esinevad
+  // Regions in the order they appear
   const regions = useMemo(() => {
     const seen = [];
     food.forEach((f) => {

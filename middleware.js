@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { AUTH_COOKIE, expectedToken, timingSafeEqual } from "@/lib/auth";
 
 // ───────────────────────────────────────────────────────────────
-// Paroolikaitse kogu saidile (lehed JA /api), oma sisselogimislehega.
+// Password protection for the whole site (pages AND /api), with its own login page.
 //
-// Aktiveerub, kui keskkonnamuutuja SITE_PASSWORD on seatud.
-// Ilma selleta on sait avatud (nt arenduseks).
+// Activates when the SITE_PASSWORD environment variable is set.
+// Without it the site is open (e.g. for development).
 //
-// Reisiandmed renderdatakse ainult kaitstud "/" vastusesse — staatilistes
-// JS-pakkides andmeid pole, seega _next/static võib jääda avalikuks
-// (vajalik, et sisselogimisleht saaks ilusti laadida).
+// Trip data is rendered only into the protected "/" response — the static
+// JS bundles contain no data, so _next/static can stay public
+// (needed so the login page can load properly).
 // ───────────────────────────────────────────────────────────────
 
 const PASS = process.env.SITE_PASSWORD || "";
@@ -19,7 +19,7 @@ export async function middleware(request) {
 
   const { pathname } = request.nextUrl;
 
-  // Sisselogimisleht ja autentimise API peavad olema avatud
+  // The login page and the auth API must remain open
   if (pathname === "/login" || pathname.startsWith("/api/auth")) {
     return NextResponse.next();
   }
@@ -28,12 +28,12 @@ export async function middleware(request) {
   const valid = cookie && timingSafeEqual(cookie, await expectedToken(PASS));
   if (valid) return NextResponse.next();
 
-  // API-d → 401 (mitte ümbersuunamine)
+  // APIs → 401 (not a redirect)
   if (pathname.startsWith("/api/")) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  // Lehed → suuna sisselogimisele, jäta sihtkoht meelde
+  // Pages → redirect to login, remember the destination
   const url = request.nextUrl.clone();
   url.pathname = "/login";
   url.search = "";
@@ -42,6 +42,6 @@ export async function middleware(request) {
 }
 
 export const config = {
-  // Jookse kõigil teedel peale data-vabade staatiliste varade
+  // Run on all paths except data-free static assets
   matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg).*)"],
 };

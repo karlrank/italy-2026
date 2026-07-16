@@ -1,5 +1,5 @@
-// Staatilised Tailwindi klassinimed iga piirkonna värvi jaoks.
-// Klassinimed peavad failis sõna-sõnalt esinema, et Tailwind need leiaks.
+// Static Tailwind class names for each region's color.
+// The class names must appear verbatim in this file so Tailwind picks them up.
 export const accents = {
   bergamo: {
     text: "text-bergamo",

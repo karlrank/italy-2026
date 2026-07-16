@@ -1,6 +1,6 @@
-// Pakkimisnimekirja esemete haldus CMS-i sisus.
-// Lugemine annab kategooriad; POST lisab/eemaldab esemeid ja salvestab KV-sse.
-// Kaitstud middleware'iga (vajab sisselogimist). Kirjutamine eeldab KV-d.
+// Managing packing-list items within the CMS content.
+// Reading returns the categories; POST adds/removes items and saves to KV.
+// Protected by the middleware (requires login). Writing requires KV.
 
 import {
   getContent,

@@ -1,4 +1,4 @@
-// Lihtsad joonikoonid (stroke = currentColor).
+// Simple line icons (stroke = currentColor).
 const base = {
   width: 24,
   height: 24,

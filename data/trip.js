@@ -1,4 +1,4 @@
-// Kogu reisi sisu ühes failis. Andmed pärinevad reisi Exceli tabelist.
+// All trip content in one file. Data comes from the trip's Excel spreadsheet.
 
 export const trip = {
   title: "Itaalia 2026",
@@ -12,7 +12,7 @@ export const trip = {
 };
 
 // ─────────────────────────────────────────────────────────────
-// LENNUD — täida lennunumbrid CMS-is; elav staatus tuleb API-st
+// FLIGHTS — fill in flight numbers in the CMS; live status comes from the API
 // ─────────────────────────────────────────────────────────────
 export const flights = [
   {
@@ -40,7 +40,7 @@ export const flights = [
 ];
 
 // ─────────────────────────────────────────────────────────────
-// RENDIAUTOD
+// RENTAL CARS
 // ─────────────────────────────────────────────────────────────
 export const cars = [
   {
@@ -84,7 +84,7 @@ export const cars = [
 ];
 
 // ─────────────────────────────────────────────────────────────
-// SÖÖGIKOHAD (peresõbralikud, peatuste lähedal). Link → Google Maps.
+// PLACES TO EAT (family-friendly, near the stops). Link → Google Maps.
 // ─────────────────────────────────────────────────────────────
 export const food = [
   // Bergamo
@@ -95,22 +95,22 @@ export const food = [
   { id: "f4", name: "Cascina Boneta", area: "Sarnico", accent: "iseo", note: "Pererestoran järvevaatega — pasta, grill, pizza, õuealad.", price: "€€", hours: "" },
   { id: "f5", name: "La Baia", area: "Sarnico", accent: "iseo", note: "Pizza ja kala järve ääres; gluteeni-/laktoosivabad valikud.", price: "€€", hours: "" },
   { id: "f6", name: "L'Approdo", area: "Sarnico", accent: "iseo", note: "Restoran-pizzeria otse järve ääres.", price: "€€", hours: "" },
-  // Garda — läänekallas
+  // Garda — west shore
   { id: "f7", name: "Ristorante Pisenze", area: "Manerba del Garda", accent: "garda", note: "Mänguala lastele, lähedal majutusele.", price: "€€", hours: "" },
   { id: "f8", name: "Al Porticciolo", area: "San Felice del Benaco", accent: "garda", note: "Järve ääres, pereomanduses.", price: "€€", hours: "" },
   { id: "f9", name: "Osteria della Pieve", area: "Manerba del Garda", accent: "garda", note: "Hubane ja peresõbralik.", price: "€€", hours: "" },
-  // Garda — Valeggio (tortellinid)
+  // Garda — Valeggio (tortellini)
   { id: "f10", name: "Alla Borsa", area: "Valeggio sul Mincio", accent: "garda", note: "Kuulus tortellini-restoran.", price: "€€€", hours: "" },
   { id: "f11", name: "Al Re del Tortellino", area: "Valeggio sul Mincio", accent: "garda", note: "Kohalikud käsitsi tehtud tortellinid.", price: "€€", hours: "" },
   // Garda — Lazise & Sirmione
   { id: "f12", name: "Agriturismo Le Caldane", area: "Lazise", accent: "garda", note: "Talurestoran, kõrgtoolid ja aiamänguala.", price: "€€", hours: "" },
   { id: "f13", name: "Pizzeria Bengio", area: "Lazise", accent: "garda", note: "Pizza ja lihatoidud, sõbralik perele.", price: "€", hours: "" },
   { id: "f14", name: "Pizzeria Erica", area: "Sirmione", accent: "garda", note: "Pizza/pasta, terrass ja basseinid lastele.", price: "€€", hours: "" },
-  // Milano / Malpensa (viimane õhtu)
+  // Milano / Malpensa (last evening)
   { id: "f15", name: "Corte Visconti", area: "Somma Lombardo", accent: "milano", note: "Pereomanduses, värske pizza — lennujaama lähedal.", price: "€€", hours: "" },
   { id: "f16", name: "Trattoria Cacciatori", area: "Somma Lombardo", accent: "milano", note: "Traditsiooniline Itaalia köök.", price: "€€", hours: "" },
   { id: "f17", name: "Osteria della Pista", area: "Somma Lombardo", accent: "milano", note: "Lastesõbralik, sobib gruppidele.", price: "€€", hours: "" },
-  // Jäätis / gelato 🍦
+  // Ice cream / gelato 🍦
   { id: "g1", name: "La Marianna", area: "Città Alta, Bergamo", accent: "bergamo", type: "gelato", note: "Stracciatella sünnikoht (1961), terrass linnavaatega.", price: "€", hours: "" },
   { id: "g2", name: "Gelateria La Gatta", area: "Sarnico", accent: "iseo", type: "gelato", note: "Pere jäätisekoht 1950ndatest järve ääres; gluteeni-/laktoosivaba.", price: "€", hours: "" },
   { id: "g3", name: "La Cremeria di Lazise", area: "Lazise", accent: "garda", type: "gelato", note: "Käsitööjäätis ja saiakesed järvepromenaadil.", price: "€", hours: "" },
@@ -119,7 +119,7 @@ export const food = [
 ];
 
 // ─────────────────────────────────────────────────────────────
-// KAART — peatused ja marsruut
+// MAP — stops and route
 // ─────────────────────────────────────────────────────────────
 // type: "airport" | "stay" | "spot"
 export const mapStops = [
@@ -251,14 +251,14 @@ export const mapStops = [
   },
 ];
 
-// Ööbimiste marsruut (joon kaardil)
+// Route between overnight stays (line on the map)
 export const routePath = [
   [45.6306, 8.7281], // Malpensa
   [45.71, 9.677], // Bergamo
   [45.6603, 10.0537], // Lake Iseo
   [45.5466, 10.5616], // Garda
-  [45.62, 8.73], // Milano (lennujaama lähedal)
-  [45.6306, 8.7281], // tagasi Malpensa
+  [45.62, 8.73], // Milano (near the airport)
+  [45.6306, 8.7281], // back to Malpensa
 ];
 
 export const quickFacts = [
@@ -269,7 +269,7 @@ export const quickFacts = [
 ];
 
 // ─────────────────────────────────────────────────────────────
-// AJAKAVA
+// ITINERARY
 // ─────────────────────────────────────────────────────────────
 export const itinerary = [
   {
@@ -404,7 +404,7 @@ export const itinerary = [
 ];
 
 // ─────────────────────────────────────────────────────────────
-// MAJUTUS (hinnad ühe pere kohta)
+// ACCOMMODATION (prices per family)
 // ─────────────────────────────────────────────────────────────
 export const stays = [
   {
@@ -461,7 +461,7 @@ export const stays = [
 ];
 
 // ─────────────────────────────────────────────────────────────
-// TEGEVUSED PIIRKONDADE KAUPA
+// ACTIVITIES BY REGION
 // ─────────────────────────────────────────────────────────────
 export const activityRegions = [
   {
@@ -574,7 +574,7 @@ export const activityRegions = [
 ];
 
 // ─────────────────────────────────────────────────────────────
-// EELARVE
+// BUDGET
 // ─────────────────────────────────────────────────────────────
 export const budgetActivities = [
   { name: "Città Alta köisraudtee", cost: "14 €" },
@@ -592,7 +592,7 @@ export const budgetActivities = [
 export const budgetActivitiesTotal = "544–575 €";
 export const budgetActivitiesNote = "Mõlema pere peale kokku";
 
-// Pileteid ette ostes saab säästa
+// Buying tickets in advance saves money
 export const ticketTips = [
   "Sigurtà: online 64 € (4×16 €) vs kohapeal 72 € — sääst ~8 €.",
   "Natura Viva: online 150 € (6×25 €) vs kohapeal 180 € — sääst ~30 €.",
@@ -606,10 +606,10 @@ export const ticketLinks = [
 ];
 
 // ─────────────────────────────────────────────────────────────
-// PRAKTILINE INFO
+// PRACTICAL INFO
 // ─────────────────────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────
-// FOTOD (Wikimedia Commons, vabad litsentsid — viited krediidis)
+// PHOTOS (Wikimedia Commons, free licenses — sources in the credits)
 // ─────────────────────────────────────────────────────────────
 export const photos = {
   garda: {
@@ -639,7 +639,7 @@ export const photos = {
   },
 };
 
-// Milline foto käib millise ööbimiskoha juurde
+// Which photo goes with which accommodation
 export const stayPhotoKey = {
   Bergamo: "bergamo",
   "Lake Iseo": "iseo",
@@ -647,7 +647,7 @@ export const stayPhotoKey = {
   Milano: "milano",
 };
 
-// Ajakava päev → kaardimärgi nimi (kaardiga sidumiseks)
+// Itinerary day → map marker name (for linking to the map)
 export const dayFocus = {
   1: "Bergamo — majutus",
   2: "Le Cornelle loomaaed",
@@ -660,7 +660,7 @@ export const dayFocus = {
 };
 
 // ─────────────────────────────────────────────────────────────
-// ILM — tüüpiline juuli (kliimanormid) + elav hetketemp (Open-Meteo)
+// WEATHER — typical July (climate normals) + live current temperature (Open-Meteo)
 // ─────────────────────────────────────────────────────────────
 export const climate = [
   {
@@ -704,7 +704,7 @@ export const climate = [
 ];
 
 // ─────────────────────────────────────────────────────────────
-// PAKKIMISNIMEKIRI (vaikevalik, jagatud kahe pere peale)
+// PACKING LIST (default selection, shared between the two families)
 // ─────────────────────────────────────────────────────────────
 export const packingCategories = [
   {

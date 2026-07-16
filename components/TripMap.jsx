@@ -40,7 +40,7 @@ export default function TripMap({ stops, route }) {
         opacity: 0.95,
       }).addTo(map);
 
-      // Markers (jäta vahele vigaste koordinaatidega peatused)
+      // Markers (skip stops with invalid coordinates)
       const validStops = (stops || []).filter(
         (s) => Number.isFinite(s.lat) && Number.isFinite(s.lng)
       );
@@ -79,7 +79,7 @@ export default function TripMap({ stops, route }) {
         map.setView([45.55, 10.2], 8);
       }
 
-      // Ajakavast tulev "Vaata kaardil" sündmus
+      // "View on map" event coming from the itinerary
       const onFocus = (e) => {
         const entry = markersByName[e.detail?.name];
         if (entry) {

@@ -1,5 +1,5 @@
-// Sisu lugemine ja salvestamine (CMS). Kaitstud middleware'iga (vajab
-// sisselogimist). Kirjutamine eeldab seadistatud KV-andmebaasi.
+// Reading and saving content (CMS). Protected by the middleware (requires
+// login). Writing requires a configured KV database.
 
 import {
   getContent,

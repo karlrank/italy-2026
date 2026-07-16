@@ -6,7 +6,7 @@ import { Icon } from "@/components/Icons";
 function safeNext() {
   if (typeof window === "undefined") return "/";
   const n = new URLSearchParams(window.location.search).get("next") || "/";
-  // Luba ainult sama-saidi suhtelised teed
+  // Allow only same-site relative paths
   return n.startsWith("/") && !n.startsWith("//") ? n : "/";
 }
 

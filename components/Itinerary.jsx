@@ -10,7 +10,7 @@ export default function Itinerary({ days, dayFocus, food = [] }) {
   const [active, setActive] = useState(0);
   const [todayIndex, setTodayIndex] = useState(-1);
 
-  // Leia tänane reisipäev (kliendipoolselt, et vältida hydratsiooni viga)
+  // Find today's trip day (client-side, to avoid a hydration mismatch)
   useEffect(() => {
     const d = new Date();
     const key = `${String(d.getDate()).padStart(2, "0")}.${String(

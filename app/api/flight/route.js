@@ -1,28 +1,28 @@
-// Elav lennustaatus. Pärib lennuandmete API-st serveripoolselt, et API
-// võti jääks salajaseks. Kaitstud middleware'iga.
+// Live flight status. Queries the flight data API server-side so the API
+// key stays secret. Protected by the middleware.
 //
-// Allikate järjekord:
-//   1. AeroDataBox RapidAPI kaudu (peamine)
-//   2. AeroDataBox api.market kaudu (sama andmestik, eraldi kvoot —
-//      jäetakse vahele, kui 1. juba vastas sisuga "lendu pole")
-//   3. AirLabs otse (airlabs.co, oma võti — RapidAPI AirLabsi list on katki)
+// Source order:
+//   1. AeroDataBox via RapidAPI (primary)
+//   2. AeroDataBox via api.market (same dataset, separate quota —
+//      skipped if 1. already returned a substantive "no flight" answer)
+//   3. AirLabs directly (airlabs.co, own key — the RapidAPI AirLabs listing is broken)
 //
-//   FLIGHT_API_KEY        – RapidAPI võti AeroDataBoxile
-//   FLIGHT_API_HOST       – vaikimisi aerodatabox.p.rapidapi.com
-//   FLIGHT_APIMARKET_KEY  – api.market võti AeroDataBoxile (valikuline)
-//   AIRLABS_API_KEY       – airlabs.co võti (valikuline)
+//   FLIGHT_API_KEY        – RapidAPI key for AeroDataBox
+//   FLIGHT_API_HOST       – defaults to aerodatabox.p.rapidapi.com
+//   FLIGHT_APIMARKET_KEY  – api.market key for AeroDataBox (optional)
+//   AIRLABS_API_KEY       – airlabs.co key (optional)
 //
-// Tulemused vahemälustatakse KV-s (globaalne, jagatud kõigi külastajate
-// vahel) või protsessimälus, kui KV puudub. Vahemälu eluiga sõltub sellest,
-// kui kaugel lend on — kuupäeva kaugus muudab värskuse tähtsust:
+// Results are cached in KV (global, shared across all visitors) or in
+// process memory when KV is absent. Cache lifetime depends on how far
+// away the flight is — the date's distance changes how much freshness matters:
 //
-//   > 48 h väljumiseni   → 24 h  (graafik ei muutu, ära kuluta kvooti)
-//   48–24 h              → 2 h
-//   24–6 h               → 1 h
-//   viimased 6 h + lend  → 15 min
-//   ammu möödas          → 24 h
+//   > 48 h until departure → 24 h  (schedule won't change, don't burn quota)
+//   48–24 h                → 2 h
+//   24–6 h                 → 1 h
+//   last 6 h + flight      → 15 min
+//   long past              → 24 h
 //
-// Tasuta plaan lubab ~600 päringut kuus, seega iga uuendus on kallis.
+// The free plan allows ~600 requests per month, so every refresh is expensive.
 
 import { kvConfigured, kvGet, kvSetEx } from "@/lib/kv";
 
@@ -34,30 +34,30 @@ const APIMARKET_KEY = process.env.FLIGHT_APIMARKET_KEY || "";
 const AIRLABS_KEY = process.env.AIRLABS_API_KEY || "";
 
 const HOUR = 3600;
-const ERROR_TTL = 600; // 429/5xx — lühike paus, et pollijad ei taguks kvooti
+const ERROR_TTL = 600; // 429/5xx — short pause so pollers don't hammer the quota
 
-// Vahemälu eluiga sekundites olenevalt sellest, mitu tundi on väljumiseni
+// Cache lifetime in seconds depending on how many hours remain until departure
 function ttlSeconds(hoursUntilDeparture) {
   if (hoursUntilDeparture > 48) return 24 * HOUR;
   if (hoursUntilDeparture > 24) return 2 * HOUR;
   if (hoursUntilDeparture > 6) return 1 * HOUR;
-  if (hoursUntilDeparture > -12) return 15 * 60; // lennu aken kuni saabumiseni
-  return 24 * HOUR; // lend ammu möödas, staatus külmunud
+  if (hoursUntilDeparture > -12) return 15 * 60; // flight window until arrival
+  return 24 * HOUR; // flight long past, status frozen
 }
 
-// Vercel'i serva-vahemälu (CDN) eluiga — hoiab korduvad päringud
-// funktsiooni ja KV-d üldse käivitamast; middleware kontrollib parooli
-// enne vahemälu. Lühem kui KV aste, et astmevahetused jõuaksid pärale.
+// Vercel edge cache (CDN) lifetime — keeps repeat requests from hitting
+// the function and KV at all; the middleware checks the password before
+// the cache. Shorter than the KV tier so tier transitions take effect.
 function cdnSeconds(hoursUntilDeparture) {
   if (hoursUntilDeparture > 48) return 3600;
   if (hoursUntilDeparture > 24) return 1800;
   if (hoursUntilDeparture > 6) return 600;
-  if (hoursUntilDeparture > -12) return 120; // lennupäeval max 2 min
+  if (hoursUntilDeparture > -12) return 120; // max 2 min on flight day
   return 3600;
 }
 
-// JSON-vastus koos serva-vahemälu päistega. Vead ja ?refresh=1 saavad
-// vastavalt lühikese/olematu vahemälu.
+// JSON response with edge-cache headers. Errors and ?refresh=1 get a
+// short / no cache respectively.
 function jsonCached(body, date, refresh) {
   let seconds = 0;
   if (!refresh) {
@@ -67,9 +67,10 @@ function jsonCached(body, date, refresh) {
       seconds = 60;
     }
   }
-  // SWR sama pikk kui eluiga: aegunud vastus serveeritakse servast kohe
-  // ja värskendus käib taustal — MISS-viivitust näeb vaid akna esimene
-  // külastaja. Halvim vananemine 2× aste (lennupäeval max 4 min).
+  // SWR as long as the lifetime: a stale response is served from the edge
+  // immediately and revalidation runs in the background — only the window's
+  // first visitor sees the MISS delay. Worst-case staleness is 2× the tier
+  // (max 4 min on flight day).
   const headers = {
     "Cache-Control": seconds
       ? `public, max-age=0, s-maxage=${seconds}, stale-while-revalidate=${seconds}`
@@ -78,8 +79,8 @@ function jsonCached(body, date, refresh) {
   return Response.json(body, { headers });
 }
 
-// Väljumisaeg: eelista API täpset UTC-aega, muidu eelda keskpäeva UTC-s.
-// AeroDataBox annab "2026-07-24 12:35Z", AirLabs "2026-07-24 12:35".
+// Departure time: prefer the API's exact UTC time, otherwise assume noon UTC.
+// AeroDataBox gives "2026-07-24 12:35Z", AirLabs "2026-07-24 12:35".
 function departureMs(dateStr, utcStr) {
   if (utcStr) {
     const iso = String(utcStr).replace(" ", "T").replace(/Z$/, "") + "Z";
@@ -89,7 +90,7 @@ function departureMs(dateStr, utcStr) {
   return new Date(`${dateStr}T12:00:00Z`).getTime();
 }
 
-const mem = new Map(); // varuvahemälu, kui KV puudub
+const mem = new Map(); // fallback cache when KV is absent
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function getCached(key) {
@@ -116,8 +117,8 @@ async function setCached(key, value, ttl) {
   }
 }
 
-// fetch korduskatsetega 5xx / võrguvea korral.
-// 429 EI korrata — see on kvoodisignaal, kordamine ainult võimendab kulu.
+// fetch with retries on 5xx / network errors.
+// 429 is NOT retried — it's a quota signal; retrying only amplifies the cost.
 async function fetchUpstream(url, headers) {
   const tries = 3;
   let resp = null;
@@ -152,7 +153,7 @@ async function fetchJson(url, headers = {}) {
 
 const NOT_FOUND_MSG = "Selle numbri ja kuupäevaga lendu ei leitud.";
 
-// ── Peamine allikas: AeroDataBox ─────────────────────────────────
+// ── Primary source: AeroDataBox ──────────────────────────────────
 
 function seg(s) {
   if (!s) return null;
@@ -170,7 +171,7 @@ function seg(s) {
   };
 }
 
-// AeroDataBoxi väravad — sama API, eri turuplatsid oma kvootidega
+// AeroDataBox gateways — same API, different marketplaces with their own quotas
 const ADB_GATEWAYS = {
   rapidapi: {
     name: "aerodatabox",
@@ -220,9 +221,9 @@ async function queryAeroDataBox(number, date, gateway) {
   };
 }
 
-// ── Varuallikas: AirLabs ─────────────────────────────────────────
-// /flight tagastab lennunumbri JÄRGMISE või käimasoleva toimumise,
-// mitte suvalise kuupäeva oma — seega kuupäeva peab ise kontrollima.
+// ── Fallback source: AirLabs ─────────────────────────────────────
+// /flight returns the flight number's NEXT or in-progress occurrence,
+// not one for an arbitrary date — so the date must be checked manually.
 
 const AIRLABS_STATUS = {
   scheduled: "Scheduled",
@@ -252,8 +253,9 @@ async function queryAirlabs(number, date) {
   )}&api_key=${encodeURIComponent(AIRLABS_KEY)}`;
   let { r, raw, data } = await fetchJson(url);
 
-  // 429 on sekundipiirang (mitu lendu päritakse korraga), mis taastub
-  // kohe — erinevalt AeroDataBoxi kuukvoodist tasub üks viivitusega kordus
+  // 429 is a per-second limit (several flights queried at once) that
+  // recovers immediately — unlike AeroDataBox's monthly quota, one
+  // delayed retry is worthwhile
   if (r && r.status === 429) {
     await sleep(1500 + Math.floor(Math.random() * 500));
     ({ r, raw, data } = await fetchJson(url));
@@ -311,7 +313,7 @@ export async function GET(request) {
     return Response.json({ configured: true, error: "bad params" }, { status: 400 });
   }
 
-  // ?refresh=1 sunnib vahemälust mööda (silumine / allika vahetus)
+  // ?refresh=1 forces a cache bypass (debugging / switching sources)
   const refresh = searchParams.get("refresh") === "1";
   const cacheKey = `flight:${number}:${date}`;
   if (!refresh) {
@@ -324,16 +326,16 @@ export async function GET(request) {
       ? await queryAeroDataBox(number, date, ADB_GATEWAYS.rapidapi)
       : { configured: true, found: false, upstreamStatus: 0, message: "" };
 
-    // Sama API teise värava kaudu — mõttekas ainult siis, kui esimene
-    // EI saanud sisulist vastust (kvoot/viga); "lendu pole" (200) kehtib
-    // mõlemas väravas ühtmoodi
+    // Same API via the other gateway — only makes sense when the first
+    // did NOT get a substantive answer (quota/error); "no flight" (200)
+    // holds identically for both gateways
     if (!result.found && result.upstreamStatus !== 200 && APIMARKET_KEY) {
       const alt = await queryAeroDataBox(number, date, ADB_GATEWAYS.apimarket);
       if (alt.found || alt.upstreamStatus === 200) result = alt;
     }
 
-    // Kui AeroDataBox ei leidnud või on maas, proovi AirLabs'i.
-    // Varu "ei leitud" (200) on kasutajale parem vastus kui kvoodiviga.
+    // If AeroDataBox found nothing or is down, try AirLabs.
+    // A fallback "not found" (200) is a better answer for the user than a quota error.
     if (!result.found && AIRLABS_KEY) {
       const fallback = await queryAirlabs(number, date);
       if (fallback.found || (result.upstreamStatus !== 200 && fallback.upstreamStatus === 200)) {
@@ -346,8 +348,8 @@ export async function GET(request) {
       console.log(`[flight] ${number} ${date} ← ${body.source}: ${body.status}`);
     }
     const hoursUntil = (departureMs(date, depUtc) - Date.now()) / 3600000;
-    // Leitud ja "ei leitud" (püsiv seis) elavad kuupäevapõhise astme järgi;
-    // vead (429/5xx) saavad lühikese pausi, et pollijad kvooti ei taguks
+    // Found and "not found" (a stable state) live by the date-based tier;
+    // errors (429/5xx) get a short pause so pollers don't hammer the quota
     const ttl =
       body.found || body.upstreamStatus === 200
         ? ttlSeconds(hoursUntil)

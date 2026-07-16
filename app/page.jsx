@@ -213,7 +213,7 @@ export default async function Page() {
         </div>
       </section>
 
-      {/* ───────────────── LENNUD ───────────────── */}
+      {/* ───────────────── FLIGHTS ───────────────── */}
       <section id="lennud" className="mx-auto max-w-6xl px-5 pt-20 pb-10 md:pt-28 md:pb-12">
         <SectionHeading
           kicker="Lennud"
@@ -226,7 +226,7 @@ export default async function Page() {
         </Reveal>
       </section>
 
-      {/* ───────────────── RENDIAUTOD ───────────────── */}
+      {/* ───────────────── RENTAL CARS ───────────────── */}
       <section id="autod" className="mx-auto max-w-6xl px-5 pb-10 md:pb-12">
         <SectionHeading
           kicker="Rendiautod"
@@ -239,7 +239,7 @@ export default async function Page() {
         </Reveal>
       </section>
 
-      {/* ───────────────── KAART ───────────────── */}
+      {/* ───────────────── MAP ───────────────── */}
       <section id="kaart" className="mx-auto max-w-6xl px-5 pt-12 pb-24 md:pt-16 md:pb-32">
         <SectionHeading
           kicker="Marsruut"
@@ -258,7 +258,7 @@ export default async function Page() {
         </Reveal>
       </section>
 
-      {/* ───────────────── AJAKAVA ───────────────── */}
+      {/* ───────────────── ITINERARY ───────────────── */}
       <section id="ajakava" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
         <SectionHeading
           kicker="Päev päevalt"
@@ -271,7 +271,7 @@ export default async function Page() {
         </Reveal>
       </section>
 
-      {/* ───────────────── MAJUTUS ───────────────── */}
+      {/* ───────────────── ACCOMMODATION ───────────────── */}
       <section id="majutus" className="bg-white/50 py-24 md:py-32">
         <div className="mx-auto max-w-6xl px-5">
           <SectionHeading
@@ -379,7 +379,7 @@ export default async function Page() {
         </div>
       </section>
 
-      {/* ───────────────── TEGEVUSED ───────────────── */}
+      {/* ───────────────── ACTIVITIES ───────────────── */}
       <section id="tegevused" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
         <SectionHeading
           kicker="Mida teha"
@@ -392,7 +392,7 @@ export default async function Page() {
         </Reveal>
       </section>
 
-      {/* ───────────────── SÖÖGIKOHAD ───────────────── */}
+      {/* ───────────────── FOOD SPOTS ───────────────── */}
       <section id="sook" className="bg-white/50 py-24 md:py-32">
         <div className="mx-auto max-w-6xl px-5">
           <SectionHeading
@@ -407,7 +407,7 @@ export default async function Page() {
         </div>
       </section>
 
-      {/* ───────────────── PAKKIMINE ───────────────── */}
+      {/* ───────────────── PACKING ───────────────── */}
       <section id="pakkimine" className="bg-white/50 py-24 md:py-32">
         <div className="mx-auto max-w-6xl px-5">
           <SectionHeading
@@ -422,7 +422,7 @@ export default async function Page() {
         </div>
       </section>
 
-      {/* ───────────────── EELARVE ───────────────── */}
+      {/* ───────────────── BUDGET ───────────────── */}
       <section id="eelarve" className="py-24 md:py-32">
         <div className="mx-auto max-w-6xl px-5">
           <SectionHeading
@@ -518,7 +518,7 @@ export default async function Page() {
         </div>
       </section>
 
-      {/* ───────────────── PRAKTILINE INFO ───────────────── */}
+      {/* ───────────────── PRACTICAL INFO ───────────────── */}
       <section id="info" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
         <SectionHeading
           kicker="Hea teada"

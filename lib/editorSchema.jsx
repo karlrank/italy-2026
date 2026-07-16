@@ -1,7 +1,7 @@
 "use client";
 
-// Üks tõeallikas redaktoritele: sektsioonide skeemid + SectionEditor.
-// Kasutavad nii /admin kui ka avalehe inline-dialoogid.
+// Single source of truth for the editors: section schemas + SectionEditor.
+// Used by both /admin and the front page's inline dialogs.
 
 import {
   ListEditor,

@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/Icons";
 
-const CHECK_KEY = "packing:italy-2026"; // linnukeste salvestusvõti (KV)
-const LS = "italy2026-packing-checked"; // kohalik varuvariant
+const CHECK_KEY = "packing:italy-2026"; // checkmark storage key (KV)
+const LS = "italy2026-packing-checked"; // local fallback
 const POLL_MS = 15000;
 const EDIT_GRACE_MS = 2500;
 
@@ -32,7 +32,7 @@ export default function Packing({ categories }) {
     return {};
   };
 
-  // ── Laadimine: linnukesed + värsked kategooriad ──
+  // ── Loading: checkmarks + fresh categories ──
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -71,7 +71,7 @@ export default function Packing({ categories }) {
     };
   }, []);
 
-  // ── Linnukeste salvestamine ──
+  // ── Saving checkmarks ──
   useEffect(() => {
     if (!ready) return;
     try {
@@ -94,7 +94,7 @@ export default function Packing({ categories }) {
     }, 600);
   }, [checked, mode, ready]);
 
-  // ── Elav sünk ──
+  // ── Live sync ──
   useEffect(() => {
     if (!ready || mode !== "shared") return;
     const refresh = async () => {
@@ -258,7 +258,7 @@ export default function Packing({ categories }) {
         )}
       </div>
 
-      {/* Kategooriad */}
+      {/* Categories */}
       <div className="grid items-start gap-5 md:grid-cols-2 lg:grid-cols-3">
         {cats.map((cat) => {
           const items = cat.items || [];

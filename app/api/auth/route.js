@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 const PASS = process.env.SITE_PASSWORD || "";
 
-// Sisselogimine
+// Log in
 export async function POST(request) {
   if (!PASS) return Response.json({ ok: true, open: true });
 
@@ -28,12 +28,12 @@ export async function POST(request) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30, // 30 päeva
+    maxAge: 60 * 60 * 24 * 30, // 30 days
   });
   return Response.json({ ok: true });
 }
 
-// Väljalogimine
+// Log out
 export async function DELETE() {
   const jar = await cookies();
   jar.delete(AUTH_COOKIE);

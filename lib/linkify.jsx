@@ -1,7 +1,7 @@
 import { mapsUrl } from "@/lib/links";
 
-// Tuntud kohad/objektid → Google Mapsi päring. Tekstis lingitakse automaatselt.
-// Eesti käändelõpud haaratakse juurde (nt "Sigurtàsse", "Sarnicos").
+// Known places/sights → Google Maps query. Linked automatically within text.
+// Estonian case endings are captured as well (e.g. "Sigurtàsse", "Sarnicos").
 const PLACES = [
   ["Parco Faunistico Le Cornelle", "Parco Faunistico Le Cornelle, Valbrembo"],
   ["Le Cornelle", "Parco Faunistico Le Cornelle, Valbrembo"],
@@ -40,7 +40,7 @@ const PLACES = [
   ["Iseo", "Lago d'Iseo"],
 ];
 
-// Pikimad fraasid esmalt (et "Lido di Iseo" ei jääks "Iseo" alla)
+// Longest phrases first (so "Lido di Iseo" isn't shadowed by "Iseo")
 const SORTED = [...PLACES].sort((a, b) => b[0].length - a[0].length);
 const QUERY = Object.fromEntries(PLACES.map(([p, q]) => [p, q]));
 const PHRASES = SORTED.map(([p]) => p);

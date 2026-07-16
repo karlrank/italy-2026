@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { accentFor } from "@/components/accents";
 
-// WMO ilmakood → emoji
+// WMO weather code → emoji
 function codeEmoji(code) {
   if (code == null) return "";
   if (code === 0) return "☀️";
@@ -19,7 +19,7 @@ function codeEmoji(code) {
 
 const dayMonth = (iso) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}`;
 
-// Haversine'i kaugus km-des
+// Haversine distance in km
 function distanceKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
   const toRad = (d) => (d * Math.PI) / 180;
@@ -59,13 +59,13 @@ function WeatherCard({ c, startISO, endISO, featured = false }) {
 
         let focus, isTrip;
         if (startDate && locDate >= startDate && locDate <= endDate) {
-          focus = locDate; // reisi ajal
+          focus = locDate; // during the trip
           isTrip = true;
         } else if (startDate && startDate <= lastDate) {
-          focus = startDate; // reis ennustusaknas
+          focus = startDate; // trip is within the forecast window
           isTrip = true;
         } else {
-          focus = locDate; // liiga vara → kohalik tänane eelvaade
+          focus = locDate; // too early → local preview for today
           isTrip = false;
         }
 

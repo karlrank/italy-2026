@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-// Foto, mis kukub pildi laadimise ebaõnnestumisel tagasi gradiendile.
+// Photo that falls back to a gradient when the image fails to load.
 export default function Photo({
   src,
   alt,

@@ -1,7 +1,8 @@
-// Jagatud pakkimisnimekirja salvestus.
-// Kasutab Vercel KV / Upstash Redis REST API-t, kui keskkonnamuutujad on
-// olemas. Kui pole, vastab { configured: false } ja klient kasutab
-// localStorage'i (seadmepõhine). Nii töötab leht ka ilma andmebaasita.
+// Shared packing-list storage.
+// Uses the Vercel KV / Upstash Redis REST API when the environment variables
+// are present. If not, it responds with { configured: false } and the client
+// falls back to localStorage (per-device). This way the page also works
+// without a database.
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ const REST_TOKEN =
   process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "";
 const configured = Boolean(REST_URL && REST_TOKEN);
 
-// Lubame ainult selle projekti võtmeid
+// Allow only this project's keys
 function safeKey(key) {
   return typeof key === "string" && /^packing:[a-z0-9:-]{1,64}$/i.test(key)
     ? key

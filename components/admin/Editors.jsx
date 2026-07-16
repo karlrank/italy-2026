@@ -1,6 +1,6 @@
 "use client";
 
-// Üldotstarbelised redaktorikomponendid CMS-i jaoks.
+// General-purpose editor components for the CMS.
 
 const inputBase =
   "w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition focus:border-iseo";
@@ -119,7 +119,7 @@ export function StringList({ label, items = [], onChange, placeholder }) {
   );
 }
 
-// Nimekiri objektidest { id, label } — säilitab id-d (linnukeste jaoks)
+// List of { id, label } objects — preserves ids (for checkmarks)
 export function LabeledList({ label, items = [], onChange, placeholder }) {
   const rid = () =>
     "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);

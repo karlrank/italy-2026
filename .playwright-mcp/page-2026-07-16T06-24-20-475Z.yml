@@ -1,0 +1,111 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - region "Notifications alt+T"
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - button [ref=e8]:
+          - link [ref=e9] [cursor=pointer]:
+            - /url: /hub
+            - 'img "RapidAPI Hub: public API Marketplace" [ref=e10]'
+        - generic [ref=e11]: Search APIs
+        - generic [ref=e17]:
+          - button "Help" [ref=e18]
+          - button "Sign In" [ref=e21]
+          - button "Sign Up" [ref=e22]
+    - main [ref=e29]:
+      - generic [ref=e31]:
+        - complementary [ref=e32]:
+          - navigation [ref=e33]:
+            - link "Discovery" [ref=e34] [cursor=pointer]:
+              - /url: /hub
+            - generic [ref=e40]:
+              - generic [ref=e41]: Workspace
+              - button "Sign Up" [ref=e46]
+            - link "AirLabs.Co icon API Overview" [ref=e50] [cursor=pointer]:
+              - /url: /air-labs-air-labs-default/api/airlabs-co
+              - generic [ref=e51]:
+                - img "AirLabs.Co icon" [ref=e53]
+                - generic [ref=e54]: API Overview
+            - generic [ref=e55]: Version
+            - generic [ref=e57]:
+              - generic:
+                - log
+                - generic: v1 (current)
+          - generic [ref=e58]:
+            - generic [ref=e59]: Endpoints
+            - searchbox "Search Endpoints" [ref=e63]
+            - button "MCP Playground" [ref=e64]
+          - link "GET Flights" [ref=e72] [cursor=pointer]:
+            - /url: /air-labs-air-labs-default/api/airlabs-co/playground/apiendpoint_10c1e794-3d80-401a-a37d-f4029bd9dfe8
+            - generic [ref=e73]: GET
+            - generic [ref=e75]:
+              - button "Flights" [ref=e76]
+              - button [ref=e78]
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - navigation [ref=e85]:
+              - list [ref=e86]:
+                - listitem [ref=e87]:
+                  - link [ref=e88] [cursor=pointer]:
+                    - /url: /hub
+                - listitem [ref=e93]:
+                  - link "categories" [ref=e94] [cursor=pointer]:
+                    - /url: /categories
+                - listitem [ref=e97]:
+                  - link "Data" [ref=e98] [cursor=pointer]:
+                    - /url: /search/Data
+                - listitem [ref=e101]:
+                  - link [ref=e102] [cursor=pointer]:
+                    - /url: /air-labs-air-labs-default/api/airlabs-co
+                    - img "icon" [ref=e103]
+                    - paragraph [ref=e104]: AirLabs.Co
+                - listitem [ref=e107]:
+                  - generic [ref=e108]:
+                    - paragraph [ref=e109]: GET
+                    - paragraph [ref=e110]: Flights
+            - button "Test Endpoint" [ref=e112]
+          - generic [ref=e121]:
+            - tablist [ref=e124]:
+              - tab "App" [selected] [ref=e125]
+              - tab "Params(7)" [ref=e126]
+              - tab "Headers" [ref=e127]
+              - tab "Body" [disabled]
+              - tab "Authorizations" [ref=e128]
+            - generic [ref=e129]:
+              - generic [ref=e136]:
+                - generic "Request URL" [ref=e138]
+                - generic [ref=e139]:
+                  - log [ref=e141]
+                  - combobox [ref=e145]
+              - generic [ref=e152]:
+                - tablist [ref=e153]:
+                  - tab "Code Snippets" [selected] [ref=e154]
+                  - tab "Example Responses" [disabled]
+                  - tab "Results" [disabled]
+                - tabpanel "Code Snippets" [ref=e155]:
+                  - generic [ref=e157]:
+                    - generic [ref=e158]:
+                      - generic [ref=e159]: "Target:"
+                      - generic [ref=e160]:
+                        - log [ref=e162]
+                        - generic [ref=e164] [cursor=pointer]:
+                          - generic [ref=e165]: Shell
+                          - combobox [ref=e167]
+                    - generic [ref=e173]:
+                      - generic [ref=e174]: "Client:"
+                      - generic [ref=e175]:
+                        - log [ref=e177]
+                        - generic [ref=e179] [cursor=pointer]:
+                          - generic [ref=e180]: cURL
+                          - combobox [ref=e182]
+                    - button "Copy Snippet" [ref=e188]
+  - iframe [ref=e193]:
+    - generic [ref=f3e5]:
+      - generic [ref=f3e6]:
+        - text: protected by
+        - strong [ref=f3e7]: reCAPTCHA
+      - generic [ref=f3e9]:
+        - text: reCAPTCHA is changing its terms of service.
+        - link "Take action." [ref=f3e10] [cursor=pointer]:
+          - /url: https://google.com/recaptcha/admin/migrate
