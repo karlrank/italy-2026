@@ -363,13 +363,10 @@ function FlightCard({ flight, index = 0 }) {
             {live && live.configured === false && " · lisa API võti elavaks staatuseks"}
             {live?.configured &&
               live.found === false &&
-              ` · staatust ei leitud${
-                live.upstreamStatus ? ` (${live.upstreamStatus})` : ""
-              }`}
+              (live.upstreamStatus === 200
+                ? " · elav staatus ilmub lennupäeva lähedal"
+                : " · elav staatus pole hetkel saadaval")}
           </p>
-        )}
-        {live?.configured && live.found === false && live.message && (
-          <p className="mt-1 text-xs text-bergamo/80">{live.message}</p>
         )}
         {!flight.flightNumber && (
           <p className="mt-4 text-xs text-ink/45">
