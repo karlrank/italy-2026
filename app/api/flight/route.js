@@ -1,13 +1,13 @@
 // Elav lennustaatus. Pärib lennuandmete API-st serveripoolselt, et API
 // võti jääks salajaseks. Kaitstud middleware'iga.
 //
-// Peamine allikas on AeroDataBox; kui see ei vasta või ei leia lendu
-// (nt kvoot otsas → 429), proovitakse varuks AirLabs'i. Mõlemad käivad
-// läbi RapidAPI ja kasutavad sama võtit.
+// Peamine allikas on AeroDataBox (RapidAPI); kui see ei vasta või ei
+// leia lendu (nt kvoot otsas → 429), proovitakse varuks AirLabs'i otse
+// (airlabs.co, oma võti — RapidAPI AirLabsi list on katki).
 //
-//   FLIGHT_API_KEY    – RapidAPI võti (kohustuslik)
-//   FLIGHT_API_HOST   – vaikimisi aerodatabox.p.rapidapi.com
-//   AIRLABS_API_HOST  – vaikimisi airlabs.p.rapidapi.com
+//   FLIGHT_API_KEY   – RapidAPI võti AeroDataBoxile (kohustuslik)
+//   FLIGHT_API_HOST  – vaikimisi aerodatabox.p.rapidapi.com
+//   AIRLABS_API_KEY  – airlabs.co võti (valikuline; ilma selleta varu puudub)
 //
 // Tulemused vahemälustatakse KV-s (globaalne, jagatud kõigi külastajate
 // vahel) või protsessimälus, kui KV puudub. Vahemälu eluiga sõltub sellest,
@@ -27,7 +27,7 @@ export const dynamic = "force-dynamic";
 
 const KEY = process.env.FLIGHT_API_KEY || "";
 const HOST = process.env.FLIGHT_API_HOST || "aerodatabox.p.rapidapi.com";
-const AIRLABS_HOST = process.env.AIRLABS_API_HOST || "airlabs.p.rapidapi.com";
+const AIRLABS_KEY = process.env.AIRLABS_API_KEY || "";
 
 const HOUR = 3600;
 const ERROR_TTL = 600; // 429/5xx — lühike paus, et pollijad ei taguks kvooti
@@ -101,11 +101,8 @@ async function fetchUpstream(url, headers) {
   return resp;
 }
 
-async function fetchJson(url, host) {
-  const r = await fetchUpstream(url, {
-    "X-RapidAPI-Key": KEY,
-    "X-RapidAPI-Host": host,
-  });
+async function fetchJson(url, headers = {}) {
+  const r = await fetchUpstream(url, headers);
   const raw = r ? await r.text() : "";
   let data = null;
   try {
@@ -138,7 +135,10 @@ function seg(s) {
 
 async function queryAeroDataBox(number, date) {
   const url = `https://${HOST}/flights/number/${number}/${date}?withAircraftImage=false&withLocation=false`;
-  const { r, raw, data } = await fetchJson(url, HOST);
+  const { r, raw, data } = await fetchJson(url, {
+    "X-RapidAPI-Key": KEY,
+    "X-RapidAPI-Host": HOST,
+  });
 
   if (!r || !r.ok) {
     const message =
@@ -199,15 +199,16 @@ function airlabsSeg(f, p) {
 }
 
 async function queryAirlabs(number, date) {
-  const url = `https://${AIRLABS_HOST}/flight?flight_iata=${encodeURIComponent(number)}`;
-  let { r, raw, data } = await fetchJson(url, AIRLABS_HOST);
+  const url = `https://airlabs.co/api/v9/flight?flight_iata=${encodeURIComponent(
+    number
+  )}&api_key=${encodeURIComponent(AIRLABS_KEY)}`;
+  let { r, raw, data } = await fetchJson(url);
 
-  // AirLabsi 429 on RapidAPI sekundipiirang (mitu lendu päritakse korraga),
-  // mis taastub kohe — erinevalt AeroDataBoxi kuukvoodist tasub üks
-  // viivitusega kordus. Kvoodi-429 puhul kordus lihtsalt ebaõnnestub uuesti.
+  // 429 on sekundipiirang (mitu lendu päritakse korraga), mis taastub
+  // kohe — erinevalt AeroDataBoxi kuukvoodist tasub üks viivitusega kordus
   if (r && r.status === 429) {
     await sleep(1500 + Math.floor(Math.random() * 500));
-    ({ r, raw, data } = await fetchJson(url, AIRLABS_HOST));
+    ({ r, raw, data } = await fetchJson(url));
   }
 
   if (!r || !r.ok || data?.error) {
@@ -269,7 +270,7 @@ export async function GET(request) {
 
     // Kui peamine ei leidnud või on maas (nt kvoot otsas), proovi varu.
     // Varu "ei leitud" (200) on kasutajale parem vastus kui kvoodiviga.
-    if (!result.found) {
+    if (!result.found && AIRLABS_KEY) {
       const fallback = await queryAirlabs(number, date);
       if (fallback.found || (result.upstreamStatus !== 200 && fallback.upstreamStatus === 200)) {
         result = fallback;
