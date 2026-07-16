@@ -1,12 +1,25 @@
-// Elav lennustaatus. Pärib lennuandmete API-st (AeroDataBox / RapidAPI)
-// serveripoolselt, et API võti jääks salajaseks. Kaitstud middleware'iga.
+// Elav lennustaatus. Pärib lennuandmete API-st serveripoolselt, et API
+// võti jääks salajaseks. Kaitstud middleware'iga.
 //
-//   FLIGHT_API_KEY   – RapidAPI võti (kohustuslik)
-//   FLIGHT_API_HOST  – vaikimisi aerodatabox.p.rapidapi.com
-//   FLIGHT_CACHE_TTL – edukate tulemuste vahemälu sekundites (vaikimisi 600)
+// Peamine allikas on AeroDataBox; kui see ei vasta või ei leia lendu
+// (nt kvoot otsas → 429), proovitakse varuks AirLabs'i. Mõlemad käivad
+// läbi RapidAPI ja kasutavad sama võtit.
 //
-// Tulemused vahemälustatakse KV-s (kui on) või protsessimälus, et hoida
-// päringuid alla pakettide kiiruspiiri. 429/5xx korral korratakse viivitusega.
+//   FLIGHT_API_KEY    – RapidAPI võti (kohustuslik)
+//   FLIGHT_API_HOST   – vaikimisi aerodatabox.p.rapidapi.com
+//   AIRLABS_API_HOST  – vaikimisi airlabs.p.rapidapi.com
+//
+// Tulemused vahemälustatakse KV-s (globaalne, jagatud kõigi külastajate
+// vahel) või protsessimälus, kui KV puudub. Vahemälu eluiga sõltub sellest,
+// kui kaugel lend on — kuupäeva kaugus muudab värskuse tähtsust:
+//
+//   > 48 h väljumiseni   → 24 h  (graafik ei muutu, ära kuluta kvooti)
+//   48–24 h              → 2 h
+//   24–6 h               → 1 h
+//   viimased 6 h + lend  → 15 min
+//   ammu möödas          → 24 h
+//
+// Tasuta plaan lubab ~600 päringut kuus, seega iga uuendus on kallis.
 
 import { kvConfigured, kvGet, kvSetEx } from "@/lib/kv";
 
@@ -14,8 +27,30 @@ export const dynamic = "force-dynamic";
 
 const KEY = process.env.FLIGHT_API_KEY || "";
 const HOST = process.env.FLIGHT_API_HOST || "aerodatabox.p.rapidapi.com";
-const OK_TTL = Number(process.env.FLIGHT_CACHE_TTL || 600); // 10 min
-const FAIL_TTL = 60; // ajutiste vigade lühike vahemälu
+const AIRLABS_HOST = process.env.AIRLABS_API_HOST || "airlabs.p.rapidapi.com";
+
+const HOUR = 3600;
+const ERROR_TTL = 600; // 429/5xx — lühike paus, et pollijad ei taguks kvooti
+
+// Vahemälu eluiga sekundites olenevalt sellest, mitu tundi on väljumiseni
+function ttlSeconds(hoursUntilDeparture) {
+  if (hoursUntilDeparture > 48) return 24 * HOUR;
+  if (hoursUntilDeparture > 24) return 2 * HOUR;
+  if (hoursUntilDeparture > 6) return 1 * HOUR;
+  if (hoursUntilDeparture > -12) return 15 * 60; // lennu aken kuni saabumiseni
+  return 24 * HOUR; // lend ammu möödas, staatus külmunud
+}
+
+// Väljumisaeg: eelista API täpset UTC-aega, muidu eelda keskpäeva UTC-s.
+// AeroDataBox annab "2026-07-24 12:35Z", AirLabs "2026-07-24 12:35".
+function departureMs(dateStr, utcStr) {
+  if (utcStr) {
+    const iso = String(utcStr).replace(" ", "T").replace(/Z$/, "") + "Z";
+    const d = new Date(iso);
+    if (!isNaN(d)) return d.getTime();
+  }
+  return new Date(`${dateStr}T12:00:00Z`).getTime();
+}
 
 const mem = new Map(); // varuvahemälu, kui KV puudub
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -44,7 +79,8 @@ async function setCached(key, value, ttl) {
   }
 }
 
-// fetch korduskatsetega 429 / 5xx / võrguvea korral
+// fetch korduskatsetega 5xx / võrguvea korral.
+// 429 EI korrata — see on kvoodisignaal, kordamine ainult võimendab kulu.
 async function fetchUpstream(url, headers) {
   const tries = 3;
   let resp = null;
@@ -56,7 +92,7 @@ async function fetchUpstream(url, headers) {
       await sleep(600 * (i + 1));
       continue;
     }
-    if ((resp.status === 429 || resp.status >= 500) && i < tries - 1) {
+    if (resp.status >= 500 && i < tries - 1) {
       await sleep(800 * (i + 1) + Math.floor(Math.random() * 400));
       continue;
     }
@@ -64,6 +100,25 @@ async function fetchUpstream(url, headers) {
   }
   return resp;
 }
+
+async function fetchJson(url, host) {
+  const r = await fetchUpstream(url, {
+    "X-RapidAPI-Key": KEY,
+    "X-RapidAPI-Host": host,
+  });
+  const raw = r ? await r.text() : "";
+  let data = null;
+  try {
+    data = raw ? JSON.parse(raw) : null;
+  } catch {
+    data = null;
+  }
+  return { r, raw, data };
+}
+
+const NOT_FOUND_MSG = "Selle numbri ja kuupäevaga lendu ei leitud.";
+
+// ── Peamine allikas: AeroDataBox ─────────────────────────────────
 
 function seg(s) {
   if (!s) return null;
@@ -78,6 +133,110 @@ function seg(s) {
     gate: s.gate || null,
     checkInDesk: s.checkInDesk || null,
     baggageBelt: s.baggageBelt || null,
+  };
+}
+
+async function queryAeroDataBox(number, date) {
+  const url = `https://${HOST}/flights/number/${number}/${date}?withAircraftImage=false&withLocation=false`;
+  const { r, raw, data } = await fetchJson(url, HOST);
+
+  if (!r || !r.ok) {
+    const message =
+      (data && (data.message || data.error)) || raw.slice(0, 200) || "";
+    console.error(`[flight] aerodatabox ${number} ${date} → ${r?.status}: ${message}`);
+    return { configured: true, found: false, upstreamStatus: r?.status || 0, message };
+  }
+
+  const leg = Array.isArray(data) ? data[0] : data?.flights?.[0] || null;
+  if (!leg) {
+    return { configured: true, found: false, upstreamStatus: 200, message: NOT_FOUND_MSG };
+  }
+
+  return {
+    configured: true,
+    found: true,
+    source: "aerodatabox",
+    status: leg.status || "Unknown",
+    number: leg.number || number,
+    callSign: leg.callSign || null,
+    airline: leg.airline?.name || null,
+    aircraft: leg.aircraft?.model || null,
+    reg: leg.aircraft?.reg || null,
+    distanceKm: leg.greatCircleDistance?.km
+      ? Math.round(leg.greatCircleDistance.km)
+      : null,
+    codeshare: leg.codeshareStatus || null,
+    departure: seg(leg.departure),
+    arrival: seg(leg.arrival),
+    depUtc: leg.departure?.scheduledTime?.utc || null,
+  };
+}
+
+// ── Varuallikas: AirLabs ─────────────────────────────────────────
+// /flight tagastab lennunumbri JÄRGMISE või käimasoleva toimumise,
+// mitte suvalise kuupäeva oma — seega kuupäeva peab ise kontrollima.
+
+const AIRLABS_STATUS = {
+  scheduled: "Scheduled",
+  "en-route": "EnRoute",
+  landed: "Arrived",
+  cancelled: "Canceled",
+};
+
+function airlabsSeg(f, p) {
+  return {
+    airport: f[`${p}_name`] || f[`${p}_iata`] || "",
+    iata: f[`${p}_iata`] || "",
+    city: f[`${p}_city`] || "",
+    country: f[`${p}_country`] || "",
+    scheduled: f[`${p}_time`] || null,
+    revised: f[`${p}_estimated`] || f[`${p}_actual`] || null,
+    terminal: f[`${p}_terminal`] || null,
+    gate: f[`${p}_gate`] || null,
+    checkInDesk: null,
+    baggageBelt: p === "arr" ? f.arr_baggage || null : null,
+  };
+}
+
+async function queryAirlabs(number, date) {
+  const url = `https://${AIRLABS_HOST}/flight?flight_iata=${encodeURIComponent(number)}`;
+  const { r, raw, data } = await fetchJson(url, AIRLABS_HOST);
+
+  if (!r || !r.ok || data?.error) {
+    const message =
+      data?.error?.message || data?.message || raw.slice(0, 200) || "";
+    console.error(`[flight] airlabs ${number} ${date} → ${r?.status}: ${message}`);
+    return { configured: true, found: false, upstreamStatus: r?.status || 0, message };
+  }
+
+  const f = data?.response;
+  const flightDates = [f?.dep_time, f?.dep_time_utc]
+    .filter(Boolean)
+    .map((t) => String(t).slice(0, 10));
+  if (!f || !flightDates.includes(date)) {
+    return { configured: true, found: false, upstreamStatus: 200, message: NOT_FOUND_MSG };
+  }
+
+  let status = AIRLABS_STATUS[f.status] || "Unknown";
+  if (status === "Scheduled" && Number(f.dep_delayed || f.delayed) > 0) {
+    status = "Delayed";
+  }
+
+  return {
+    configured: true,
+    found: true,
+    source: "airlabs",
+    status,
+    number: f.flight_iata || number,
+    callSign: f.flight_icao || null,
+    airline: f.airline_name || f.airline_iata || null,
+    aircraft: f.aircraft_icao || null,
+    reg: f.reg_number || null,
+    distanceKm: null,
+    codeshare: null,
+    departure: airlabsSeg(f, "dep"),
+    arrival: airlabsSeg(f, "arr"),
+    depUtc: f.dep_time_utc || null,
   };
 }
 
@@ -97,67 +256,28 @@ export async function GET(request) {
   const cached = await getCached(cacheKey);
   if (cached) return Response.json({ ...cached, cached: true });
 
-  let result;
   try {
-    const url = `https://${HOST}/flights/number/${number}/${date}?withAircraftImage=false&withLocation=false`;
-    const r = await fetchUpstream(url, {
-      "X-RapidAPI-Key": KEY,
-      "X-RapidAPI-Host": HOST,
-    });
+    let result = await queryAeroDataBox(number, date);
 
-    const raw = r ? await r.text() : "";
-    let data = null;
-    try {
-      data = raw ? JSON.parse(raw) : null;
-    } catch {
-      data = null;
+    // Kui peamine ei leidnud või on maas (nt kvoot otsas), proovi varu.
+    // Varu "ei leitud" (200) on kasutajale parem vastus kui kvoodiviga.
+    if (!result.found) {
+      const fallback = await queryAirlabs(number, date);
+      if (fallback.found || (result.upstreamStatus !== 200 && fallback.upstreamStatus === 200)) {
+        result = fallback;
+      }
     }
 
-    if (!r || !r.ok) {
-      const message =
-        (data && (data.message || data.error)) || raw.slice(0, 200) || "";
-      console.error(`[flight] ${number} ${date} → ${r?.status}: ${message}`);
-      result = {
-        configured: true,
-        found: false,
-        upstreamStatus: r?.status || 0,
-        message,
-      };
-      // 429 ei vahemälusta — lase järgmisel katsel uuesti proovida
-      if (r?.status !== 429) await setCached(cacheKey, result, FAIL_TTL);
-      return Response.json(result);
-    }
-
-    const leg = Array.isArray(data) ? data[0] : data?.flights?.[0] || null;
-    if (!leg) {
-      result = {
-        configured: true,
-        found: false,
-        upstreamStatus: 200,
-        message: "Selle numbri ja kuupäevaga lendu ei leitud.",
-      };
-      await setCached(cacheKey, result, FAIL_TTL);
-      return Response.json(result);
-    }
-
-    result = {
-      configured: true,
-      found: true,
-      status: leg.status || "Unknown",
-      number: leg.number || number,
-      callSign: leg.callSign || null,
-      airline: leg.airline?.name || null,
-      aircraft: leg.aircraft?.model || null,
-      reg: leg.aircraft?.reg || null,
-      distanceKm: leg.greatCircleDistance?.km
-        ? Math.round(leg.greatCircleDistance.km)
-        : null,
-      codeshare: leg.codeshareStatus || null,
-      departure: seg(leg.departure),
-      arrival: seg(leg.arrival),
-    };
-    await setCached(cacheKey, result, OK_TTL);
-    return Response.json(result);
+    const { depUtc, ...body } = result;
+    const hoursUntil = (departureMs(date, depUtc) - Date.now()) / 3600000;
+    // Leitud ja "ei leitud" (püsiv seis) elavad kuupäevapõhise astme järgi;
+    // vead (429/5xx) saavad lühikese pausi, et pollijad kvooti ei taguks
+    const ttl =
+      body.found || body.upstreamStatus === 200
+        ? ttlSeconds(hoursUntil)
+        : ERROR_TTL;
+    await setCached(cacheKey, body, ttl);
+    return Response.json(body);
   } catch (e) {
     console.error(`[flight] ${number} ${date} → exception: ${e?.message}`);
     return Response.json({ configured: true, found: false, error: "fetch failed" });

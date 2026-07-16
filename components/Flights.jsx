@@ -225,7 +225,32 @@ function FlightCard({ flight, index = 0 }) {
   useEffect(() => {
     if (!flight.flightNumber || !flight.date) return;
     let cancelled = false;
+    let timerId = null;
+    let lastLoad = 0;
+    // Väljumisaeg täpsustub live-andmetega; enne seda eelda keskpäeva
+    let depMs = new Date(`${flight.date}T12:00:00`).getTime();
+
+    // Pollimissamm sõltub lennu kaugusest (server vahemälustab sama astmega,
+    // nii et tegelik API-kulu on jagatud kõigi külastajate vahel):
+    //   >48 h → ei polli (piisab ühest laadimisest); 48–24 h → 2 h;
+    //   24–6 h → 1 h; viimased 6 h kuni saabumiseni → 15 min; möödas → ei polli
+    const pollMs = () => {
+      const h = (depMs - Date.now()) / 3600000;
+      if (h > 48) return null;
+      if (h > 24) return 2 * 3600000;
+      if (h > 6) return 3600000;
+      if (h > -12) return 15 * 60000;
+      return null;
+    };
+
+    const schedule = () => {
+      if (cancelled) return;
+      const ms = pollMs();
+      if (ms) timerId = setTimeout(load, ms);
+    };
+
     const load = async () => {
+      lastLoad = Date.now();
       try {
         const res = await fetch(
           `/api/flight?number=${encodeURIComponent(
@@ -234,20 +259,39 @@ function FlightCard({ flight, index = 0 }) {
           { cache: "no-store" }
         );
         const json = await res.json();
-        if (!cancelled) setLive(json);
+        if (cancelled) return;
+        const sched = json?.departure?.scheduled;
+        if (sched) {
+          const d = new Date(String(sched).replace(" ", "T"));
+          if (!isNaN(d)) depMs = d.getTime();
+        }
+        setLive(json);
       } catch {
         if (!cancelled) setLive({ configured: true, found: false });
       }
+      schedule();
     };
-    // Hajuta päringud, et mitte tabada API kiiruspiiri (nt 1 päring/sek)
+
+    // Hajuta esmased päringud, et mitte tabada API kiiruspiiri (1 päring/sek)
     const startId = setTimeout(load, index * 1500);
-    const id = setInterval(load, 5 * 60 * 1000); // iga 5 min
-    const onVis = () => document.visibilityState === "visible" && load();
+    // Tab'i fookusesse tulek värskendab ainult siis, kui andmed on
+    // pollimissammu jagu vananenud — mitte igal pilgul
+    const onVis = () => {
+      const ms = pollMs();
+      if (
+        document.visibilityState === "visible" &&
+        ms &&
+        Date.now() - lastLoad >= ms
+      ) {
+        clearTimeout(timerId);
+        load();
+      }
+    };
     document.addEventListener("visibilitychange", onVis);
     return () => {
       cancelled = true;
       clearTimeout(startId);
-      clearInterval(id);
+      clearTimeout(timerId);
       document.removeEventListener("visibilitychange", onVis);
     };
   }, [flight.flightNumber, flight.date, index]);
