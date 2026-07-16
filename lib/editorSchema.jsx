@@ -77,6 +77,8 @@ export const SECTIONS = [
       { key: "date", label: "Kuupäev (AAAA-KK-PP)", placeholder: "2026-07-24" },
       { key: "from", label: "Kust" },
       { key: "to", label: "Kuhu" },
+      { key: "depTime", label: "Väljumine plaani järgi (nt 14:30)", placeholder: "14:30" },
+      { key: "arrTime", label: "Saabumine plaani järgi (nt 16:05)", placeholder: "16:05" },
       { key: "note", label: "Märkus", type: "textarea" },
     ],
     newItem: () => ({
@@ -86,6 +88,8 @@ export const SECTIONS = [
       date: "",
       from: "",
       to: "",
+      depTime: "",
+      arrTime: "",
       note: "",
     }),
   },

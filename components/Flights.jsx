@@ -166,6 +166,11 @@ function FlightDialog({ flight, live, onClose }) {
                 : "Elavat infot ei leitud (ilmub reisile lähemal)."}
             </p>
           )}
+          {!live?.found && (flight.depTime || flight.arrTime) && (
+            <p className="mt-1 text-sm font-medium text-ink">
+              Plaani järgi: {flight.depTime || "—"} → {flight.arrTime || "—"}
+            </p>
+          )}
 
           {live?.found && (
             <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
@@ -336,7 +341,7 @@ function FlightCard({ flight, index = 0 }) {
               {dep?.airport || flight.from || "—"}
             </p>
             <p className="text-sm text-ink/55">
-              {fmt(dep?.revised || dep?.scheduled) || "—"}
+              {fmt(dep?.revised || dep?.scheduled) || flight.depTime || "—"}
               {dep?.terminal && (
                 <span className="ml-1 text-ink/40">· T{dep.terminal}</span>
               )}
@@ -349,7 +354,7 @@ function FlightCard({ flight, index = 0 }) {
               {arr?.airport || flight.to || "—"}
             </p>
             <p className="text-sm text-ink/55">
-              {fmt(arr?.revised || arr?.scheduled) || "—"}
+              {fmt(arr?.revised || arr?.scheduled) || flight.arrTime || "—"}
               {arr?.terminal && (
                 <span className="ml-1 text-ink/40">· T{arr.terminal}</span>
               )}

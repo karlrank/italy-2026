@@ -22,6 +22,8 @@ export const flights = [
     date: "2026-07-24",
     from: "Tallinn (TLL)",
     to: "Milano–Malpensa (MXP)",
+    depTime: "",
+    arrTime: "",
     note: "",
   },
   {
@@ -31,6 +33,8 @@ export const flights = [
     date: "2026-07-31",
     from: "Milano–Malpensa (MXP)",
     to: "Tallinn (TLL)",
+    depTime: "",
+    arrTime: "",
     note: "",
   },
 ];
