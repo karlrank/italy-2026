@@ -67,9 +67,12 @@ function jsonCached(body, date, refresh) {
       seconds = 60;
     }
   }
+  // SWR sama pikk kui eluiga: aegunud vastus serveeritakse servast kohe
+  // ja värskendus käib taustal — MISS-viivitust näeb vaid akna esimene
+  // külastaja. Halvim vananemine 2× aste (lennupäeval max 4 min).
   const headers = {
     "Cache-Control": seconds
-      ? `public, max-age=0, s-maxage=${seconds}, stale-while-revalidate=60`
+      ? `public, max-age=0, s-maxage=${seconds}, stale-while-revalidate=${seconds}`
       : "no-store",
   };
   return Response.json(body, { headers });
