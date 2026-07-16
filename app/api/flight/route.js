@@ -278,9 +278,13 @@ export async function GET(request) {
     return Response.json({ configured: true, error: "bad params" }, { status: 400 });
   }
 
+  // ?refresh=1 sunnib vahemälust mööda (silumine / allika vahetus)
+  const refresh = searchParams.get("refresh") === "1";
   const cacheKey = `flight:${number}:${date}`;
-  const cached = await getCached(cacheKey);
-  if (cached) return Response.json({ ...cached, cached: true });
+  if (!refresh) {
+    const cached = await getCached(cacheKey);
+    if (cached) return Response.json({ ...cached, cached: true });
+  }
 
   try {
     let result = KEY
@@ -305,6 +309,9 @@ export async function GET(request) {
     }
 
     const { depUtc, ...body } = result;
+    if (body.found) {
+      console.log(`[flight] ${number} ${date} ← ${body.source}: ${body.status}`);
+    }
     const hoursUntil = (departureMs(date, depUtc) - Date.now()) / 3600000;
     // Leitud ja "ei leitud" (püsiv seis) elavad kuupäevapõhise astme järgi;
     // vead (429/5xx) saavad lühikese pausi, et pollijad kvooti ei taguks
