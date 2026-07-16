@@ -1,0 +1,18 @@
+{
+  "name": "Itaalia 2026 · Murd & Rankla",
+  "short_name": "Itaalia 2026",
+  "description": "Reisiplaan: Bergamo · Lake Iseo · Gardajärv · Milano",
+  "lang": "et",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbf6ee",
+  "theme_color": "#fbf6ee",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

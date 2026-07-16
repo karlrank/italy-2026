@@ -42,6 +42,10 @@ export async function middleware(request) {
 }
 
 export const config = {
-  // Run on all paths except data-free static assets
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg).*)"],
+  // Run on all paths except data-free static assets. manifest.json and
+  // sw.js must stay open: browsers fetch the manifest without cookies,
+  // and neither file contains trip data.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|icon.svg|manifest.json|sw.js).*)",
+  ],
 };

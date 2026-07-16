@@ -1,6 +1,8 @@
 import "./globals.css";
+import PwaRegister from "@/components/PwaRegister";
 
 export const metadata = {
+  manifest: "/manifest.json",
   title: "Itaalia 2026 · Murd & Rankla",
   description:
     "Meie Itaalia reis 24.–31. juuli 2026 — Bergamo, Lake Iseo, Gardajärv ja Milano. Ajakava, majutus, tegevused ja eelarve.",
@@ -33,7 +35,10 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <PwaRegister />
+      </body>
     </html>
   );
 }
