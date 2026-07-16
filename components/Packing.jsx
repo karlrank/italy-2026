@@ -18,7 +18,6 @@ export default function Packing({ categories }) {
   const [newCat, setNewCat] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const saveTimer = useRef(null);
   const lastLocalWrite = useRef(0);
   const lastSnap = useRef("");
 
@@ -71,28 +70,29 @@ export default function Packing({ categories }) {
     };
   }, []);
 
-  // ── Saving checkmarks ──
+  // ── Local mirror of checkmarks (offline / non-KV fallback) ──
   useEffect(() => {
     if (!ready) return;
     try {
       localStorage.setItem(LS, JSON.stringify({ checked }));
     } catch {}
-    if (mode !== "shared") return;
-    lastLocalWrite.current = Date.now();
-    lastSnap.current = JSON.stringify(checked);
-    clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(async () => {
-      try {
-        const res = await fetch("/api/checklist", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key: CHECK_KEY, data: { checked } }),
-        });
-        const json = await res.json();
-        if (json?.updatedAt) setUpdatedAt(json.updatedAt);
-      } catch {}
-    }, 600);
-  }, [checked, mode, ready]);
+  }, [checked, ready]);
+
+  // Each check/uncheck is sent as its own atomic operation so two people
+  // ticking boxes at the same time never overwrite each other's changes
+  // (the old full-state save clobbered concurrent edits).
+  const sendOp = (action, id) => {
+    fetch("/api/checklist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: CHECK_KEY, action, id }),
+    })
+      .then((r) => r.json())
+      .then((j) => {
+        if (j?.updatedAt) setUpdatedAt(j.updatedAt);
+      })
+      .catch(() => {});
+  };
 
   // ── Live sync ──
   useEffect(() => {
@@ -135,13 +135,16 @@ export default function Packing({ categories }) {
   const done = allItems.filter((it) => checked[it.id]).length;
   const pct = total ? Math.round((done / total) * 100) : 0;
 
-  const toggle = (id) =>
-    setChecked((c) => {
-      const next = { ...c };
-      if (next[id]) delete next[id];
-      else next[id] = true;
-      return next;
-    });
+  const toggle = (id) => {
+    const turnOn = !checked[id];
+    const next = { ...checked };
+    if (turnOn) next[id] = true;
+    else delete next[id];
+    setChecked(next);
+    lastSnap.current = JSON.stringify(next);
+    lastLocalWrite.current = Date.now();
+    if (mode === "shared") sendOp(turnOn ? "check" : "uncheck", id);
+  };
 
   const post = async (payload) => {
     const res = await fetch("/api/packing", {
@@ -178,6 +181,7 @@ export default function Packing({ categories }) {
           delete next[itemId];
           return next;
         });
+        sendOp("uncheck", itemId); // clean up the stored checkmark too
       }
     } catch {}
     setBusy(false);
