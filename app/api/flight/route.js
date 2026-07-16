@@ -45,6 +45,36 @@ function ttlSeconds(hoursUntilDeparture) {
   return 24 * HOUR; // lend ammu möödas, staatus külmunud
 }
 
+// Vercel'i serva-vahemälu (CDN) eluiga — hoiab korduvad päringud
+// funktsiooni ja KV-d üldse käivitamast; middleware kontrollib parooli
+// enne vahemälu. Lühem kui KV aste, et astmevahetused jõuaksid pärale.
+function cdnSeconds(hoursUntilDeparture) {
+  if (hoursUntilDeparture > 48) return 3600;
+  if (hoursUntilDeparture > 24) return 1800;
+  if (hoursUntilDeparture > 6) return 600;
+  if (hoursUntilDeparture > -12) return 120; // lennupäeval max 2 min
+  return 3600;
+}
+
+// JSON-vastus koos serva-vahemälu päistega. Vead ja ?refresh=1 saavad
+// vastavalt lühikese/olematu vahemälu.
+function jsonCached(body, date, refresh) {
+  let seconds = 0;
+  if (!refresh) {
+    if (body.found || body.upstreamStatus === 200) {
+      seconds = cdnSeconds((departureMs(date, null) - Date.now()) / 3600000);
+    } else {
+      seconds = 60;
+    }
+  }
+  const headers = {
+    "Cache-Control": seconds
+      ? `public, max-age=0, s-maxage=${seconds}, stale-while-revalidate=60`
+      : "no-store",
+  };
+  return Response.json(body, { headers });
+}
+
 // Väljumisaeg: eelista API täpset UTC-aega, muidu eelda keskpäeva UTC-s.
 // AeroDataBox annab "2026-07-24 12:35Z", AirLabs "2026-07-24 12:35".
 function departureMs(dateStr, utcStr) {
