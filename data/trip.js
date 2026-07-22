@@ -7,7 +7,7 @@ export const trip = {
   families: ["Perekond Murd", "Perekond Rankla"],
   group: "4 täiskasvanut + 3 last (4-aastane, 3-aastane ja alla 2-aastane)",
   route: ["Malpensa", "Bergamo", "Lake Iseo", "Gardajärv", "Milano"],
-  startISO: "2026-07-24T00:00:00",
+  startISO: "2026-07-24T08:00:00",
   endISO: "2026-07-31T23:59:59",
 };
 
