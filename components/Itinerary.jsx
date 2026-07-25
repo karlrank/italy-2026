@@ -43,7 +43,10 @@ export default function Itinerary({ days, dayFocus, food = [] }) {
   return (
     <div>
       {/* Day rail */}
-      <div className="no-scrollbar -mx-5 mb-8 flex gap-2.5 overflow-x-auto px-5 pb-2 md:mx-0 md:flex-wrap md:justify-center md:px-0">
+      {/* pt-4: overflow-x-auto forces overflow-y to auto, which would clip the
+          "Täna" badge that sits above the today card — top padding keeps it in
+          the visible (unclipped) padding area. */}
+      <div className="no-scrollbar -mx-5 mb-8 flex gap-2.5 overflow-x-auto px-5 pb-2 pt-4 md:mx-0 md:flex-wrap md:justify-center md:px-0">
         {days.map((d, i) => {
           const da = accentFor(d.accent);
           const isActive = i === active;
