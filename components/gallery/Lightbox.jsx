@@ -13,13 +13,16 @@ import {
 const mapsHref = (g) => `https://www.google.com/maps?q=${g[0]},${g[1]}`;
 
 // A 2560px frame is ~1.4 MB; only worth fetching where it can actually be seen.
-// Measured after mount, never during render — a phone and a desktop must not
-// disagree about what the first paint contains.
+// Decided once, on mount: were this to flip afterwards the first photo would be
+// fetched twice, at two sizes, which is exactly the flicker this avoids. Safe
+// to read `window` here because the lightbox only ever mounts on the client —
+// it is behind a click, so the server never renders it.
 function useWantsLarge() {
-  const [want, setWant] = useState(false);
-  useEffect(() => {
-    setWant(window.innerWidth * (window.devicePixelRatio || 1) > 1100);
-  }, []);
+  const [want] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.innerWidth * (window.devicePixelRatio || 1) > 1100
+  );
   return want;
 }
 
@@ -51,15 +54,15 @@ function TierPicker({ level, onPick, disabled }) {
   );
 }
 
-function Series({ photo, siblings, levelOf, base, onOpen, onSwap, onSeparate, onReset, busy }) {
+function Series({ photo, siblings, levelOf, base, size, onOpen, onSwap, onSeparate, onReset, busy }) {
   const strip = useRef(null);
 
   // Clicking a frame swaps the big image for it, so the whole series can be
   // flicked through at full size. Pre-fetching the viewing copies makes that
   // instant instead of a flash of nothing.
   useEffect(() => {
-    for (const s of siblings) new Image().src = src(base, "m", s);
-  }, [siblings, base]);
+    for (const s of siblings) new Image().src = src(base, size, s);
+  }, [siblings, base, size]);
 
   // Keep the frame being viewed visible when the strip is wider than the panel
   useEffect(() => {
@@ -187,10 +190,19 @@ export default function Lightbox({
   onOpenPhoto,
 }) {
   const [info, setInfo] = useState(false);
-  const [hi, setHi] = useState(false); // the 2560px version has arrived
   const bigScreen = useWantsLarge();
   const touch = useRef(null);
   const photo = items[index];
+
+  // One size per screen, decided once: loading a proxy and then upgrading it
+  // made every navigation visibly re-sharpen, which reads as a glitch.
+  const size = bigScreen ? "l" : "m";
+
+  // The frame actually painted. It lags behind `photo` while the next one
+  // downloads, so the view holds steady instead of flashing. Starts empty so
+  // the first open takes the same path as every later navigation.
+  const [painted, setPainted] = useState(null);
+  const [waiting, setWaiting] = useState(false);
 
   const go = useCallback(
     (d) => {
@@ -199,7 +211,33 @@ export default function Lightbox({
     [items.length, setIndex]
   );
 
-  useEffect(() => setHi(false), [photo?.s]);
+  useEffect(() => {
+    if (!photo || photo.s === painted?.s) return;
+    let cancelled = false;
+    // Only admit to waiting if it actually takes a moment — a cached neighbour
+    // arrives in a few ms and a spinner flashing on every arrow press is worse
+    // than the problem it reports.
+    const slow = setTimeout(() => !cancelled && setWaiting(true), 180);
+    const img = new Image();
+    img.src = src(base, size, photo);
+    const show = () => {
+      if (cancelled) return;
+      clearTimeout(slow);
+      setPainted(photo);
+      setWaiting(false);
+    };
+    // decode() resolves once the bitmap is ready to paint, so the swap cannot
+    // land mid-render; onload is the fallback where it is unsupported.
+    if (img.decode) img.decode().then(show, show);
+    else {
+      img.onload = show;
+      img.onerror = show;
+    }
+    return () => {
+      cancelled = true;
+      clearTimeout(slow);
+    };
+  }, [photo, painted?.s, base, size]);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -215,13 +253,14 @@ export default function Lightbox({
     return () => window.removeEventListener("keydown", onKey);
   }, [go, onClose, onSetTier, photo, canEdit]);
 
-  // Neighbours are almost always where the next click goes
+  // Neighbours are almost always where the next click goes — fetched at the
+  // same size, so arrowing along is a straight swap with nothing to wait for
   useEffect(() => {
     for (const d of [1, -1]) {
       const n = items[(index + d + items.length) % items.length];
-      if (n) new Image().src = src(base, "m", n);
+      if (n) new Image().src = src(base, size, n);
     }
-  }, [index, items, base]);
+  }, [index, items, base, size]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -281,23 +320,33 @@ export default function Lightbox({
       </div>
 
       <div className="relative flex min-h-0 flex-1 items-center justify-center px-2">
-        <img
-          key={photo.s}
-          src={src(base, "m", photo)}
-          alt={photo.y || photo.s}
-          className="max-h-full max-w-full object-contain"
-          style={{ aspectRatio: `${photo.w} / ${photo.h}` }}
-        />
-        {/* Quietly swap in the 2560px frame on screens that can show it */}
-        {bigScreen && (
+        {/* The grid's thumbnail is already cached, so on the very first open it
+            fills the frame instantly rather than leaving a black hole. It never
+            shows again — from then on the previous photo holds the space. */}
+        {!painted && (
           <img
-            src={src(base, "l", photo)}
+            src={src(base, "t", photo)}
             alt=""
             aria-hidden="true"
-            onLoad={() => setHi(true)}
-            className={`absolute inset-0 m-auto max-h-full max-w-full object-contain transition-opacity duration-200 ${
-              hi ? "opacity-100" : "opacity-0"
+            className="max-h-full max-w-full scale-105 object-contain blur-xl"
+            style={{ aspectRatio: `${photo.w} / ${photo.h}` }}
+          />
+        )}
+        {painted && (
+          <img
+            key={painted.s}
+            src={src(base, size, painted)}
+            alt={painted.y || painted.s}
+            className={`max-h-full max-w-full object-contain transition-opacity duration-150 ${
+              waiting ? "opacity-45" : "opacity-100"
             }`}
+            style={{ aspectRatio: `${painted.w} / ${painted.h}` }}
+          />
+        )}
+        {waiting && (
+          <span
+            className="absolute h-7 w-7 animate-spin rounded-full border-2 border-white/25 border-t-white/80"
+            aria-label="Laen"
           />
         )}
 
@@ -405,6 +454,7 @@ export default function Lightbox({
               siblings={siblings}
               levelOf={levelOf}
               base={base}
+              size={size}
               busy={busy || !canEdit}
               onOpen={onOpenPhoto}
               // Both act on the frame on screen: take the series pick's place,
