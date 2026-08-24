@@ -61,6 +61,20 @@ function Tile({ photo, base, level, tab, series, moved, onOpen }) {
   );
 }
 
+function DayHeading({ dayKey, title, count }) {
+  return (
+    <h3 className="mb-2.5 flex items-baseline gap-2">
+      <span className="font-display text-xl font-semibold text-ink">
+        {prettyDay(dayKey)}
+      </span>
+      {title && <span className="truncate text-sm text-ink/45">{title}</span>}
+      <span className="ml-auto shrink-0 text-xs tabular-nums text-ink/35">
+        {count}
+      </span>
+    </h3>
+  );
+}
+
 function VideoCard({ video, base }) {
   const [play, setPlay] = useState(false);
   const mins = Math.floor(video.dur / 60);
@@ -182,15 +196,19 @@ export default function Gallery({ dayTitles = {}, canEdit }) {
     [visible, day]
   );
 
-  const groups = useMemo(() => {
+  // Both grids are chronological, so a day break is simply where the date
+  // changes — no grouping pass needed.
+  const byDay = (list) => {
     const g = [];
-    for (const p of shown) {
-      const k = dayKey(p.d);
+    for (const item of list) {
+      const k = dayKey(item.d);
       if (!g.length || g[g.length - 1].key !== k) g.push({ key: k, items: [] });
-      g[g.length - 1].items.push(p);
+      g[g.length - 1].items.push(item);
     }
     return g;
-  }, [shown]);
+  };
+
+  const groups = useMemo(() => byDay(shown), [shown]);
 
   // A tab switch can strand the open photo (moving it to tier 1 while looking
   // at "Välja jäetud"), so the viewer keeps its own list rather than an index
@@ -407,28 +425,28 @@ export default function Gallery({ dayTitles = {}, canEdit }) {
         </p>
       )}
 
-      {isVideo ? (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {videos.map((v) => (
-            <VideoCard key={v.s} video={v} base={base} />
-          ))}
-        </div>
-      ) : (
-        groups.map((g) => (
+      {isVideo
+        ? byDay(videos).map((g) => (
+            <section key={g.key} className="mb-8">
+              <DayHeading
+                dayKey={g.key}
+                title={dayTitles[g.key]}
+                count={g.items.length}
+              />
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {g.items.map((v) => (
+                  <VideoCard key={v.s} video={v} base={base} />
+                ))}
+              </div>
+            </section>
+          ))
+        : groups.map((g) => (
           <section key={g.key} className="mb-8">
-            <h3 className="mb-2.5 flex items-baseline gap-2">
-              <span className="font-display text-xl font-semibold text-ink">
-                {prettyDay(g.key)}
-              </span>
-              {dayTitles[g.key] && (
-                <span className="truncate text-sm text-ink/45">
-                  {dayTitles[g.key]}
-                </span>
-              )}
-              <span className="ml-auto shrink-0 text-xs tabular-nums text-ink/35">
-                {g.items.length}
-              </span>
-            </h3>
+            <DayHeading
+              dayKey={g.key}
+              title={dayTitles[g.key]}
+              count={g.items.length}
+            />
             <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
               {g.items.map((p) => (
                 <Tile
@@ -444,8 +462,7 @@ export default function Gallery({ dayTitles = {}, canEdit }) {
               ))}
             </div>
           </section>
-        ))
-      )}
+        ))}
 
       {!isVideo && !shown.length && (
         <p className="py-16 text-center text-sm text-ink/45">

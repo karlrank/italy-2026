@@ -152,6 +152,39 @@ kirjas failis [`.env.example`](.env.example).
 Kogu reisi sisu elab ühes failis: [`data/trip.js`](data/trip.js). Andmete
 muutmiseks redigeeri seda faili.
 
+## Pildigalerii (`/galerii`)
+
+3299 reisikaadrit kolmes üksteise sisse pesastatud tasemes (parimad ⊂ album ⊂
+kõik) pluss välja jäetud kaadrid ja 101 videot. Jaotuse arvutas kureerimis-
+konveier välisel kettal (`Itaalia 2026/curation/`); saidil saab iga pilti
+tasemete vahel liigutada ja peaaegu ühesugustest seeriatest teise kaadri
+valida.
+
+**Kaks kihti, meelega lahus:**
+
+| | Kus | Mis |
+|---|---|---|
+| Seeme | manifest S3-s, `PHOTO_MANIFEST_URL` | masina otsus — genereeritakse iga kord uuesti |
+| Inimese muudatused | KV võti `photos:tier` | ainult need pildid, mida keegi liigutas |
+
+Kui pilt liigutatakse tagasi sinna, kuhu masin ta pani, kustutatakse kirje —
+nii jõuab uus seeme iga pildini, mille kohta kellelgi arvamust pole.
+
+**Pildid**: S3 (`italy-2026-album-426919865472`, eu-north-1) CloudFronti taga,
+~7,7 GB. Iga fail kannab teel juhuslikku märgist ja manifesti URL on salajane
+keskkonnamuutuja — repo on avalik, pildid mitte.
+
+**Seemne uuendamine** (nt kui tase 1 on uuesti hinnatud) — deploy'd pole vaja,
+sait loeb manifesti jooksvalt:
+
+```bash
+node scripts/build-photo-manifest.mjs   # loeb curation/data/*, kirjutab manifesti
+./scripts/sync-album-s3.sh x            # laadib manifesti üles (sama URL)
+```
+
+Uued pildid: `./scripts/sync-album-s3.sh t m l` (ainult puuduvad failid).
+Videod tehakse veebikõlblikuks `./scripts/transcode-videos.sh` abil.
+
 ## Kohalik arendus
 
 ```bash
