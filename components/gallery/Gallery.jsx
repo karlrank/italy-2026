@@ -286,13 +286,10 @@ export default function Gallery({ dayTitles = {}, canEdit }) {
       level === 0 ? "Jäeti välja" : `Liigutatud: ${tierOf(level).label}`
     );
 
-  // Picking a different frame from a series means you want to look at that
-  // frame, not stay staring at the one you just demoted.
-  const swap = async (photo, other) => {
-    if (await send({ action: "swap", a: photo.s, b: other.s }, "Seeria valik vahetatud")) {
-      openPhoto(other);
-    }
-  };
+  // Called from the series strip, where you are already looking at the frame
+  // you want — so this stays put rather than following anything.
+  const swap = (photo, other) =>
+    send({ action: "swap", a: photo.s, b: other.s }, "Seeria valik vahetatud");
 
   const separate = (photo, other) =>
     send(

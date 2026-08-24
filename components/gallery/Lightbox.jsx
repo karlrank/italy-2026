@@ -52,12 +52,35 @@ function TierPicker({ level, onPick, disabled }) {
 }
 
 function Series({ photo, siblings, levelOf, base, onOpen, onSwap, onSeparate, onReset, busy }) {
-  const [target, setTarget] = useState(null);
-  const alt = siblings.filter((s) => s.s !== photo.s);
-  if (!alt.length) return null;
+  const strip = useRef(null);
 
-  const chosen = alt.find((s) => s.s === target) || null;
-  const myLevel = levelOf(photo.s);
+  // Clicking a frame swaps the big image for it, so the whole series can be
+  // flicked through at full size. Pre-fetching the viewing copies makes that
+  // instant instead of a flash of nothing.
+  useEffect(() => {
+    for (const s of siblings) new Image().src = src(base, "m", s);
+  }, [siblings, base]);
+
+  // Keep the frame being viewed visible when the strip is wider than the panel
+  useEffect(() => {
+    strip.current
+      ?.querySelector('[data-active="true"]')
+      ?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+  }, [photo.s]);
+
+  if (siblings.length < 2) return null;
+
+  // The frame that currently represents this moment: the best-ranked of them.
+  // Ties go to the earliest, which is the order the strip is in.
+  const pick = siblings.reduce((best, s) => {
+    const lv = levelOf(s.s);
+    if (lv === 0) return best;
+    return !best || lv < levelOf(best.s) ? s : best;
+  }, null);
+
+  const level = levelOf(photo.s);
+  const isPick = pick && pick.s === photo.s;
+  const alsoKept = !isPick && level > 0;
 
   return (
     <div className="border-t border-white/10 pt-3">
@@ -73,43 +96,39 @@ function Series({ photo, siblings, levelOf, base, onOpen, onSwap, onSeparate, on
           Taasta masina valik
         </button>
       </div>
-      <p className="mb-2.5 text-xs leading-relaxed text-white/45">
-        Need kaadrid on peaaegu ühesugused, nii et albumisse võeti neist üks.
-        Vali mõni teine — või lase kahel eraldi seista.
-      </p>
 
-      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2">
+      <div
+        ref={strip}
+        className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2"
+      >
         {siblings.map((s) => {
           const lv = levelOf(s.s);
           const t = tierOf(lv);
           const isSelf = s.s === photo.s;
-          const isTarget = s.s === target;
           return (
             <button
               key={s.s}
-              onClick={() => (isSelf ? null : setTarget(isTarget ? null : s.s))}
-              onDoubleClick={() => onOpen(s)}
+              data-active={isSelf}
+              onClick={() => onOpen(s)}
               className={`relative shrink-0 overflow-hidden rounded-lg ring-2 transition ${
-                isSelf
-                  ? "ring-white"
-                  : isTarget
-                    ? "ring-sun"
-                    : "ring-transparent hover:ring-white/40"
+                isSelf ? "ring-white" : "ring-transparent hover:ring-white/50"
               }`}
-              title={isSelf ? "Praegu vaatad seda" : s.s}
+              title={s.s}
             >
               <img
                 src={src(base, "t", s)}
                 alt=""
                 loading="lazy"
-                className={`h-20 w-20 object-cover ${lv === 0 ? "opacity-55" : ""}`}
+                className={`h-20 w-20 object-cover transition ${
+                  lv === 0 ? "opacity-50" : ""
+                } ${isSelf ? "" : "hover:opacity-100"}`}
               />
               <span
                 className={`absolute bottom-1 left-1 h-2 w-2 rounded-full ring-1 ring-black/40 ${t.dot}`}
               />
-              {isSelf && (
-                <span className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-[10px] font-semibold text-white">
-                  praegu
+              {pick?.s === s.s && (
+                <span className="absolute inset-x-0 top-0 bg-black/55 py-0.5 text-center text-[10px] font-semibold text-white">
+                  valik
                 </span>
               )}
             </button>
@@ -117,34 +136,32 @@ function Series({ photo, siblings, levelOf, base, onOpen, onSwap, onSeparate, on
         })}
       </div>
 
-      {chosen && (
-        <div className="mt-1 flex flex-wrap items-center gap-2">
+      {isPick ? (
+        <p className="text-xs leading-relaxed text-white/45">
+          See kaader esindab seeriat. Vajuta mõnele teisele, et seda vaadata —
+          ja soovi korral hoopis tema valida.
+        </p>
+      ) : (
+        <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => {
-              onSwap(chosen);
-              setTarget(null);
-            }}
-            disabled={busy}
-            className="rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold text-ink disabled:opacity-40"
+            onClick={() => onSwap(pick)}
+            disabled={busy || !pick}
+            className="rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold text-ink transition hover:bg-white/90 disabled:opacity-40"
           >
-            Vaheta selle vastu
+            Vali see hoopis
           </button>
           <button
-            onClick={() => {
-              onSeparate(chosen);
-              setTarget(null);
-            }}
-            disabled={busy || myLevel === 0 || levelOf(chosen.s) === myLevel}
-            className="rounded-full bg-white/12 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-white/22 disabled:opacity-40"
+            onClick={() => onSeparate(pick)}
+            disabled={busy || !pick || alsoKept}
+            className="rounded-full bg-white/12 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-white/22 disabled:opacity-40"
           >
             Hoia mõlemat
           </button>
-          <button
-            onClick={() => onOpen(chosen)}
-            className="text-xs text-white/55 underline underline-offset-2 hover:text-white"
-          >
-            Vaata suurelt
-          </button>
+          <span className="text-xs text-white/40">
+            {alsoKept
+              ? "See kaader on juba eraldi albumis."
+              : "Vahetab selle seeria valikuga — või jätab mõlemad alles."}
+          </span>
         </div>
       )}
     </div>
@@ -390,8 +407,10 @@ export default function Lightbox({
               base={base}
               busy={busy || !canEdit}
               onOpen={onOpenPhoto}
-              onSwap={(other) => onSwap(photo, other)}
-              onSeparate={(other) => onSeparate(photo, other)}
+              // Both act on the frame on screen: take the series pick's place,
+              // or join it at the same tier
+              onSwap={(pick) => onSwap(photo, pick)}
+              onSeparate={(pick) => onSeparate(pick, photo)}
               onReset={() => onResetSeries(siblings)}
             />
           </div>
