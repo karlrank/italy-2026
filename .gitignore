@@ -29,3 +29,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*
+
+# playwright mcp scratch output
+/.playwright-mcp/

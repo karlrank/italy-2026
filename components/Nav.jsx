@@ -13,6 +13,9 @@ const links = [
   { id: "pakkimine", label: "Pakkimine" },
   { id: "eelarve", label: "Eelarve" },
   { id: "info", label: "Info" },
+  // Its own page rather than a section — 3300 photos do not belong on the
+  // one-pager, and the scroll-spy has nothing to observe for it
+  { href: "/galerii", label: "Pildid" },
 ];
 
 export default function Nav() {
@@ -62,12 +65,14 @@ export default function Nav() {
         <div className="hidden items-center gap-1 md:flex">
           {links.map((l) => (
             <a
-              key={l.id}
-              href={`#${l.id}`}
+              key={l.id || l.href}
+              href={l.href || `#${l.id}`}
               className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
                 active === l.id
                   ? "bg-ink text-cream"
-                  : "text-ink/70 hover:bg-ink/5 hover:text-ink"
+                  : l.href
+                    ? "text-bergamo hover:bg-bergamo/10"
+                    : "text-ink/70 hover:bg-ink/5 hover:text-ink"
               }`}
             >
               {l.label}
@@ -103,17 +108,21 @@ export default function Nav() {
       {/* Mobile dropdown */}
       <div
         className={`overflow-hidden border-t border-ink/5 bg-cream/95 backdrop-blur-md transition-all duration-300 md:hidden ${
-          open ? "max-h-80" : "max-h-0"
+          open ? "max-h-[34rem]" : "max-h-0"
         }`}
       >
         <div className="flex flex-col px-5 py-2">
           {links.map((l) => (
             <a
-              key={l.id}
-              href={`#${l.id}`}
+              key={l.id || l.href}
+              href={l.href || `#${l.id}`}
               onClick={() => setOpen(false)}
               className={`rounded-xl px-3 py-2.5 text-sm font-medium ${
-                active === l.id ? "text-bergamo" : "text-ink/80"
+                l.href
+                  ? "text-bergamo"
+                  : active === l.id
+                    ? "text-bergamo"
+                    : "text-ink/80"
               }`}
             >
               {l.label}

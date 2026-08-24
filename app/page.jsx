@@ -17,6 +17,7 @@ import Cars from "@/components/Cars";
 import ZtlGuide from "@/components/ZtlGuide";
 import Food from "@/components/Food";
 import Photo from "@/components/Photo";
+import GalleryTeaser from "@/components/GalleryTeaser";
 import LogoutButton from "@/components/LogoutButton";
 
 export const dynamic = "force-dynamic";
@@ -549,6 +550,9 @@ export default async function Page() {
           ))}
         </div>
       </section>
+
+      {/* ───────────────── PILDID ───────────────── */}
+      <GalleryTeaser />
 
       {/* ───────────────── FOOTER ───────────────── */}
       <footer className="relative overflow-hidden bg-ink py-16 text-cream">
