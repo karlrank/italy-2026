@@ -232,7 +232,8 @@ export default function Gallery({ dayTitles = {}, canEdit }) {
   const say = (text, undoable = false) => {
     setToast({ text, undoable });
     clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 7000);
+    // Long enough to notice a mistake and reach for "Võta tagasi"
+    toastTimer.current = setTimeout(() => setToast(null), 12000);
   };
 
   const merge = (delta) =>
@@ -270,8 +271,10 @@ export default function Gallery({ dayTitles = {}, canEdit }) {
         }));
         say(message, true);
       }
+      return true;
     } catch (err) {
       say(`Ei õnnestunud: ${err.message}`);
+      return false;
     } finally {
       setBusy(false);
     }
@@ -283,8 +286,13 @@ export default function Gallery({ dayTitles = {}, canEdit }) {
       level === 0 ? "Jäeti välja" : `Liigutatud: ${tierOf(level).label}`
     );
 
-  const swap = (photo, other) =>
-    send({ action: "swap", a: photo.s, b: other.s }, "Seeria valik vahetatud");
+  // Picking a different frame from a series means you want to look at that
+  // frame, not stay staring at the one you just demoted.
+  const swap = async (photo, other) => {
+    if (await send({ action: "swap", a: photo.s, b: other.s }, "Seeria valik vahetatud")) {
+      openPhoto(other);
+    }
+  };
 
   const separate = (photo, other) =>
     send(
